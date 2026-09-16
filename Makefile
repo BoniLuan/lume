@@ -4,10 +4,13 @@ DEV_COMPOSE := docker compose -p lume-dev -f compose.dev.yaml
 TEST_COMPOSE := docker compose -p lume-test -f compose.test.yaml
 PROD_COMPOSE := docker compose -p lume -f compose.prod.yaml
 
-.PHONY: help dev dev-down dev-status dev-logs dev-admin migrate migration test test-backend test-frontend lint lint-backend lint-frontend typecheck typecheck-backend typecheck-frontend build build-frontend format-check compose-validate prod-validate prod-build prod-migrate prod-up admin-create backup restore-verify api-contract
+.PHONY: help monitoring-prepare dev dev-down dev-status dev-logs dev-admin migrate migration test test-backend test-frontend lint lint-backend lint-frontend typecheck typecheck-backend typecheck-frontend build build-frontend format-check compose-validate prod-validate prod-build prod-migrate prod-up admin-create backup restore-verify api-contract
 
 help:
 	@awk 'BEGIN {FS = ":.*## "} /^[a-zA-Z0-9_-]+:.*## / {printf "%-20s %s\n", $$1, $$2}' $(MAKEFILE_LIST)
+
+monitoring-prepare: ## Merge Lume into the active shared Prometheus configuration
+	python3 scripts/prepare-monitoring.py /home/luan/projects/relay/.local/prometheus.integrated.yml .local/prometheus.integrated.yml
 
 dev: ## Start the isolated development database, API, and web client
 	$(DEV_COMPOSE) up -d --build db

@@ -1,0 +1,23 @@
+{
+  "scrape_configs": [
+    {
+      "job_name": "lume-api",
+      "scrape_interval": "30s",
+      "scrape_timeout": "7s",
+      "metrics_path": "/metrics",
+      "sample_limit": 2500,
+      "label_limit": 12,
+      "static_configs": [
+        {
+          "targets": ["lume-api-metrics:8000"],
+          "labels": {
+            "service": "lume",
+            "environment": "production",
+            "stack": "lume"
+          }
+        }
+      ]
+    }
+  ],
+  "rule_files": ["/etc/prometheus/lume/alerts.yml"]
+}

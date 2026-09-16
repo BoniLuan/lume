@@ -1,0 +1,23 @@
+groups:
+  - name: lume-operations
+    rules:
+      - alert: LumeApiMetricsUnavailable
+        expr: up{job="lume-api"} == 0
+        for: 2m
+        labels: {severity: critical, service: lume}
+        annotations:
+          summary: Lume API metrics are unavailable
+          description: Check the Lume API container, database readiness, and vigil-monitoring network.
+      - alert: LumeApiMetricsTargetMissing
+        expr: absent(up{job="lume-api"})
+        for: 5m
+        labels: {severity: warning, service: lume}
+        annotations:
+          summary: Lume API metrics target is missing
+          description: Check the shared Prometheus scrape configuration and Lume monitoring alias.
+      - alert: LumeApiRepeatedServerErrors
+        expr: sum(increase(lume_http_requests_total{job="lume-api",status=~"5.."}[10m])) >= 3
+        labels: {severity: warning, service: lume}
+        annotations:
+          summary: Lume API is returning repeated server errors
+          description: At least three HTTP 5xx responses occurred in the last ten minutes.

@@ -1,8 +1,8 @@
 # Production deployment
 
-This runbook prepares Lume without modifying the shared VPS edge. Public activation
-is a separate reviewed operation because the current origin certificate and edge
-configuration must be updated without interrupting existing applications.
+This runbook deploys Lume behind the existing Boniluan shared edge. The edge
+configuration remains owned by `/home/luan/projects/boniluan`; validate and
+recreate only its web service when Lume routing changes.
 
 ## One-time preparation
 
@@ -42,10 +42,11 @@ based on the reviewed Git commit instead of using the local defaults.
 7. Reconcile application containers with `make prod-up`.
 8. Verify `api` readiness, gateway health, and `/api/v1/openapi.json` from within
    project networks.
-9. Add the `lume-api-metrics:8000/metrics` target to the existing generated
-   Prometheus configuration while preserving all Vigil and Relay jobs.
-10. Prepare and validate the shared edge config in its owning repository. Expand
-    certificate coverage for `lume.boniluan.com` before routing public traffic.
+9. Follow [Observability](OBSERVABILITY.md) to regenerate and validate the
+   three-layer shared Prometheus configuration while preserving Vigil and Relay.
+10. Prepare and validate `boniluan/nginx/lume.conf` in the edge repository. When
+    adding a hostname, expand the existing certificate with every current SAN
+    before routing public traffic.
 11. Verify all existing public applications as well as Lume.
 12. Record actual running allocations in `/home/luan/projects/INFRASTRUCTURE.md`.
 

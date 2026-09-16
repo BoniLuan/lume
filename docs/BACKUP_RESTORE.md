@@ -4,8 +4,10 @@ CSV export is for user portability. It is not a database backup.
 
 ## Encrypted backup
 
-Install `age` on the operator host and configure the public recipient file described
-in [Deployment](DEPLOYMENT.md). Then run:
+Install `age` on the operator host (a user-local binary in `~/.local/bin` is
+sufficient) and configure the public recipient file described in
+[Deployment](DEPLOYMENT.md). Keep a protected copy of the matching private identity
+off the VPS. Then run:
 
 ```bash
 make backup

@@ -1,0 +1,7 @@
+# Applied after Vigil's base Compose and Relay's active monitoring override.
+# It replaces only Prometheus's root config mount and adds Lume's rules mount.
+services:
+  prometheus:
+    volumes:
+      - /home/luan/projects/lume/.local/prometheus.integrated.yml:/etc/prometheus/prometheus.yml:ro
+      - /home/luan/projects/lume/deploy/monitoring:/etc/prometheus/lume:ro

@@ -35,6 +35,9 @@ fi
 openssl rand -hex 32 > "${private_dir}/root_password"
 openssl rand -hex 32 > "${private_dir}/app_password"
 openssl rand -hex 48 > "${private_dir}/session_secret"
+# File-backed Docker secrets retain host ownership. The private temporary
+# directory is 0700; read-only files must be readable by container UIDs.
+chmod 0444 "${private_dir}/root_password" "${private_dir}/app_password" "${private_dir}/session_secret"
 
 docker network create --internal "$network_name" >/dev/null
 docker volume create "$volume_name" >/dev/null
