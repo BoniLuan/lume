@@ -3,7 +3,7 @@ from __future__ import annotations
 from datetime import datetime
 from typing import TYPE_CHECKING
 
-from sqlalchemy import DateTime, ForeignKey, Index, String, UniqueConstraint
+from sqlalchemy import CheckConstraint, DateTime, ForeignKey, Index, String, UniqueConstraint
 from sqlalchemy.orm import Mapped, mapped_column, relationship
 
 from lume.core.database import Base, TimestampMixin, UUIDPrimaryKeyMixin
@@ -16,6 +16,7 @@ class Category(UUIDPrimaryKeyMixin, TimestampMixin, Base):
     __tablename__ = "categories"
     __table_args__ = (
         UniqueConstraint("id", "user_id", name="uq_categories_id_user_id"),
+        CheckConstraint("kind IN ('income','expense')", name="category_kind"),
         Index("ix_categories_user_kind", "user_id", "kind"),
     )
 

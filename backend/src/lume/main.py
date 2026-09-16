@@ -6,10 +6,13 @@ from fastapi.middleware.cors import CORSMiddleware
 from sqlalchemy import text
 from sqlalchemy.exc import SQLAlchemyError
 
+from lume.accounts.api import router as accounts_router
 from lume.auth.api import router as auth_router
+from lume.categories.api import router as categories_router
 from lume.core import models as domain_models  # noqa: F401
 from lume.core.config import get_settings
 from lume.core.database import SessionFactory
+from lume.transactions.api import router as transactions_router
 from lume.users.api import router as users_router
 
 
@@ -40,6 +43,9 @@ if settings.allowed_origins:
 
 app.include_router(auth_router)
 app.include_router(users_router)
+app.include_router(accounts_router)
+app.include_router(categories_router)
+app.include_router(transactions_router)
 
 
 @app.get("/healthz", include_in_schema=False)
