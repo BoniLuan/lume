@@ -251,6 +251,7 @@ select.input { padding-right: 2rem; }
 .recurring-list > article > strong { font-size: .84rem; }
 .row-actions { display: flex; gap: .4rem; }
 .report-grid { display: grid; grid-template-columns: .7fr 1.3fr; gap: .8rem; }
+.report-actions { display: flex; gap: .55rem; }
 .report-totals { margin: 0; display: grid; gap: .8rem; }
 .report-totals div { display: flex; justify-content: space-between; align-items: baseline; }
 .report-totals dt { color: var(--muted); font-size: .75rem; }
@@ -336,6 +337,7 @@ select.input { padding-right: 2rem; }
   .recurring-list article { grid-template-columns: 40px 1fr auto; }
   .recurring-list .row-actions { grid-column: 2 / -1; }
   .month-picker { width: 100%; }
+  .report-actions { width: 100%; flex-direction: column; }
   .dialog-content { top: auto; bottom: 0; left: 0; width: 100%; max-height: calc(100vh - 1.5rem); transform: none; border-radius: 20px 20px 0 0; padding-bottom: calc(1.5rem + env(safe-area-inset-bottom)); }
   .form-grid { grid-template-columns: 1fr; }
   .form-grid > * { grid-column: 1 / -1; }

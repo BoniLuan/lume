@@ -3,7 +3,7 @@ import * as Dialog from "@radix-ui/react-dialog";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { Plus, X } from "lucide-react";
 import { useEffect, useMemo, useState } from "react";
-import { useForm } from "react-hook-form";
+import { useForm, useWatch } from "react-hook-form";
 import { z } from "zod";
 
 import { api } from "../../api/client";
@@ -53,7 +53,7 @@ export function QuickAdd({ compact = false }: { compact?: boolean }) {
       notes: "",
     },
   });
-  const kind = form.watch("kind");
+  const kind = useWatch({ control: form.control, name: "kind" });
   const suitableCategories = useMemo(
     () => categories.data?.filter((category) => category.kind === kind) ?? [],
     [categories.data, kind],

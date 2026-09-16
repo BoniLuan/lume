@@ -1,0 +1,190 @@
+name: lume
+
+x-logging: &bounded-logs
+  driver: json-file
+  options:
+    max-size: 10m
+    max-file: "3"
+
+x-api-environment: &api-environment
+  LUME_ENV: production
+  LUME_DATABASE_HOST: db
+  LUME_DATABASE_PORT: "3306"
+  LUME_DATABASE_NAME: lume
+  LUME_DATABASE_USER: lume_app
+  LUME_DATABASE_PASSWORD_FILE: /run/secrets/app_password
+  LUME_SESSION_SECRET_FILE: /run/secrets/session_secret
+  LUME_ALLOWED_ORIGINS: '[]'
+  LUME_SECURE_COOKIES: "true"
+  LUME_PUBLIC_ORIGIN: https://lume.boniluan.com
+  LUME_LOG_LEVEL: INFO
+
+x-api-common: &api-common
+  image: ${LUME_API_IMAGE:-lume-api:local}
+  build:
+    context: ./backend
+    target: production
+  environment: *api-environment
+  secrets: [app_password, session_secret]
+  init: true
+  read_only: true
+  tmpfs:
+    - /tmp:rw,noexec,nosuid,size=32m,mode=1777
+  security_opt: [no-new-privileges:true]
+  cap_drop: [ALL]
+  logging: *bounded-logs
+
+services:
+  db:
+    image: mariadb:11.4.13
+    command:
+      - --character-set-server=utf8mb4
+      - --collation-server=utf8mb4_uca1400_ai_ci
+      - --innodb-buffer-pool-size=320M
+      - --max-connections=50
+      - --skip-name-resolve
+      - --log-bin-trust-function-creators=0
+    environment:
+      MARIADB_DATABASE: lume
+      MARIADB_USER: lume_app
+      MARIADB_PASSWORD_FILE: /run/secrets/app_password
+      MARIADB_ROOT_PASSWORD_FILE: /run/secrets/root_password
+      MARIADB_MIGRATOR_PASSWORD_FILE: /run/secrets/migrator_password
+      TZ: UTC
+    secrets: [app_password, root_password, migrator_password]
+    volumes:
+      - mariadb_data:/var/lib/mysql
+      - ./deploy/mariadb/10-create-roles.sh:/docker-entrypoint-initdb.d/10-create-roles.sh:ro
+    networks: [backend]
+    healthcheck:
+      test: [CMD, healthcheck.sh, --connect, --innodb_initialized]
+      interval: 10s
+      timeout: 5s
+      retries: 12
+      start_period: 30s
+    mem_limit: 768m
+    mem_reservation: 384m
+    cpus: 0.75
+    pids_limit: 256
+    restart: unless-stopped
+    stop_grace_period: 45s
+    security_opt: [no-new-privileges:true]
+    cap_drop: [ALL]
+    cap_add: [CHOWN, DAC_OVERRIDE, FOWNER, SETGID, SETUID]
+    logging: *bounded-logs
+
+  api:
+    <<: *api-common
+    depends_on:
+      db:
+        condition: service_healthy
+    networks:
+      frontend: {}
+      backend: {}
+      monitoring:
+        aliases: [lume-api-metrics]
+    healthcheck:
+      test: [CMD, python, -c, "import urllib.request; urllib.request.urlopen('http://127.0.0.1:8000/readyz', timeout=3)"]
+      interval: 15s
+      timeout: 5s
+      retries: 4
+      start_period: 15s
+    mem_limit: 384m
+    mem_reservation: 192m
+    cpus: 0.75
+    pids_limit: 128
+    restart: unless-stopped
+    stop_grace_period: 20s
+
+  gateway:
+    image: ${LUME_GATEWAY_IMAGE:-lume-gateway:local}
+    build:
+      context: .
+      dockerfile: gateway/Dockerfile
+    depends_on:
+      api:
+        condition: service_healthy
+    networks:
+      frontend: {}
+      web-proxy:
+        aliases: [lume-gateway]
+    read_only: true
+    tmpfs:
+      - /tmp:rw,noexec,nosuid,size=16m,mode=1777
+      - /var/cache/nginx:rw,noexec,nosuid,size=16m
+      - /var/run:rw,noexec,nosuid,size=1m
+    security_opt: [no-new-privileges:true]
+    cap_drop: [ALL]
+    healthcheck:
+      test: [CMD, wget, -q, -O, /dev/null, http://127.0.0.1:8080/gateway-healthz]
+      interval: 15s
+      timeout: 3s
+      retries: 4
+      start_period: 5s
+    mem_limit: 128m
+    mem_reservation: 32m
+    cpus: 0.25
+    pids_limit: 64
+    restart: unless-stopped
+    stop_grace_period: 10s
+    logging: *bounded-logs
+
+  migrate:
+    <<: *api-common
+    profiles: [tools]
+    environment:
+      <<: *api-environment
+      LUME_DATABASE_USER: lume_migrator
+      LUME_DATABASE_PASSWORD_FILE: /run/secrets/migrator_password
+    secrets: [migrator_password, session_secret]
+    depends_on:
+      db:
+        condition: service_healthy
+    command: [alembic, upgrade, head]
+    networks: [backend]
+    restart: "no"
+    logging:
+      driver: none
+
+  admin:
+    <<: *api-common
+    profiles: [tools]
+    depends_on:
+      db:
+        condition: service_healthy
+    entrypoint: [lume-admin]
+    command: [--help]
+    networks: [backend]
+    restart: "no"
+    stdin_open: true
+    tty: true
+    logging:
+      driver: none
+
+volumes:
+  mariadb_data:
+    name: lume_mariadb_data
+
+networks:
+  frontend:
+    name: lume_frontend
+    internal: true
+  backend:
+    name: lume_backend
+    internal: true
+  web-proxy:
+    external: true
+    name: web-proxy
+  monitoring:
+    external: true
+    name: vigil-monitoring
+
+secrets:
+  app_password:
+    file: ${LUME_SECRETS_DIR:-/home/luan/.config/lume}/app_password
+  migrator_password:
+    file: ${LUME_SECRETS_DIR:-/home/luan/.config/lume}/migrator_password
+  root_password:
+    file: ${LUME_SECRETS_DIR:-/home/luan/.config/lume}/root_password
+  session_secret:
+    file: ${LUME_SECRETS_DIR:-/home/luan/.config/lume}/session_secret

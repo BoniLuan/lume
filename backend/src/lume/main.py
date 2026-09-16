@@ -13,6 +13,8 @@ from lume.categories.api import router as categories_router
 from lume.core import models as domain_models  # noqa: F401
 from lume.core.config import get_settings
 from lume.core.database import SessionFactory
+from lume.core.migrations import expected_revision
+from lume.core.observability import configure_logging, install_observability, metrics_response
 from lume.recurring.api import router as recurring_router
 from lume.reporting.api import router as reporting_router
 from lume.transactions.api import router as transactions_router
@@ -26,6 +28,7 @@ async def lifespan(app: FastAPI) -> AsyncIterator[None]:
 
 
 settings = get_settings()
+configure_logging(settings.log_level)
 app = FastAPI(
     title="Lume API",
     version="0.1.0",
@@ -34,6 +37,7 @@ app = FastAPI(
     redoc_url=None,
     lifespan=lifespan,
 )
+install_observability(app)
 
 if settings.allowed_origins:
     app.add_middleware(
@@ -63,8 +67,16 @@ def healthz() -> dict[str, str]:
 def readyz(response: Response) -> dict[str, str]:
     try:
         with SessionFactory() as session:
-            session.execute(text("SELECT 1"))
+            revision = session.scalar(text("SELECT version_num FROM alembic_version LIMIT 1"))
     except SQLAlchemyError:
         response.status_code = status.HTTP_503_SERVICE_UNAVAILABLE
         return {"status": "unavailable"}
+    if revision != expected_revision():
+        response.status_code = status.HTTP_503_SERVICE_UNAVAILABLE
+        return {"status": "schema_outdated"}
     return {"status": "ready"}
+
+
+@app.get("/metrics", include_in_schema=False)
+def metrics() -> Response:
+    return metrics_response()

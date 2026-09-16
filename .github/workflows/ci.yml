@@ -1,0 +1,91 @@
+name: CI
+
+on:
+  pull_request:
+  push:
+    branches: [main]
+
+permissions:
+  contents: read
+
+jobs:
+  backend:
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@v5
+      - name: Build backend quality image
+        run: docker build --target development -t lume-api-check:ci backend
+      - name: Ruff
+        run: |
+          docker run --rm --network none lume-api-check:ci ruff check --no-cache .
+          docker run --rm --network none lume-api-check:ci ruff format --check --no-cache .
+      - name: Mypy
+        run: docker run --rm --network none --tmpfs /tmp:rw,mode=1777 lume-api-check:ci mypy --cache-dir=/tmp/mypy-cache src tests
+      - name: Integration tests
+        run: docker compose -p lume-test -f compose.test.yaml up --build --abort-on-container-exit --exit-code-from tests tests
+      - name: Remove test resources
+        if: always()
+        run: docker compose -p lume-test -f compose.test.yaml down --volumes --remove-orphans
+
+  frontend:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    defaults:
+      run:
+        working-directory: frontend
+    steps:
+      - uses: actions/checkout@v5
+      - uses: actions/setup-node@v5
+        with:
+          node-version: 24
+          cache: npm
+          cache-dependency-path: frontend/package-lock.json
+      - run: npm ci
+      - run: npm run lint
+      - run: npm run typecheck
+      - run: npm test
+      - run: npm run build
+
+  contracts-and-containers:
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@v5
+      - uses: actions/setup-node@v5
+        with:
+          node-version: 24
+          cache: npm
+          cache-dependency-path: frontend/package-lock.json
+      - run: npm ci
+        working-directory: frontend
+      - name: Verify generated API contract
+        run: |
+          docker build --target development -t lume-api-contract:ci backend
+          docker run --rm --network none -e LUME_DATABASE_PASSWORD=openapi-only lume-api-contract:ci python -c 'import json; from lume.main import app; print(json.dumps(app.openapi(), indent=2, sort_keys=True))' > docs/openapi.json
+          npm run generate:api --prefix frontend
+          git diff --exit-code -- docs/openapi.json frontend/src/api/generated-types.ts
+      - name: Validate Compose files
+        env:
+          LUME_SECRETS_DIR: /tmp/lume-ci-secrets
+        run: |
+          mkdir -p "$LUME_SECRETS_DIR"
+          for name in app_password migrator_password root_password session_secret; do printf 'ci-placeholder-value-with-at-least-32-chars\n' > "$LUME_SECRETS_DIR/$name"; done
+          docker compose -p lume-dev -f compose.dev.yaml config --quiet
+          docker compose -p lume-test -f compose.test.yaml config --quiet
+          docker compose -p lume -f compose.prod.yaml config --quiet
+      - name: Build production images
+        run: |
+          docker build --target production -t lume-api:ci backend
+          docker build -t lume-gateway:ci -f gateway/Dockerfile .
+
+  secrets:
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - uses: actions/checkout@v5
+        with:
+          fetch-depth: 0
+      - uses: gitleaks/gitleaks-action@v2
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}

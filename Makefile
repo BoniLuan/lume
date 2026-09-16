@@ -2,14 +2,17 @@ SHELL := /bin/sh
 
 DEV_COMPOSE := docker compose -p lume-dev -f compose.dev.yaml
 TEST_COMPOSE := docker compose -p lume-test -f compose.test.yaml
+PROD_COMPOSE := docker compose -p lume -f compose.prod.yaml
 
-.PHONY: help dev dev-down dev-status dev-logs migrate migration test test-backend test-frontend lint lint-backend lint-frontend typecheck typecheck-backend typecheck-frontend build build-frontend format-check compose-validate api-contract
+.PHONY: help dev dev-down dev-status dev-logs dev-admin migrate migration test test-backend test-frontend lint lint-backend lint-frontend typecheck typecheck-backend typecheck-frontend build build-frontend format-check compose-validate prod-validate prod-build prod-migrate prod-up admin-create backup restore-verify api-contract
 
 help:
 	@awk 'BEGIN {FS = ":.*## "} /^[a-zA-Z0-9_-]+:.*## / {printf "%-20s %s\n", $$1, $$2}' $(MAKEFILE_LIST)
 
 dev: ## Start the isolated development database, API, and web client
-	$(DEV_COMPOSE) up -d --build db api web
+	$(DEV_COMPOSE) up -d --build db
+	$(DEV_COMPOSE) --profile tools run --rm migrate
+	$(DEV_COMPOSE) up -d --build api web
 
 dev-down: ## Stop development services while retaining development data
 	$(DEV_COMPOSE) down
@@ -19,6 +22,11 @@ dev-status: ## Show development service status
 
 dev-logs: ## Follow development application logs
 	$(DEV_COMPOSE) logs -f api web db
+
+dev-admin: ## Interactively create a development user; usage: make dev-admin EMAIL=... NAME='...'
+	@test -n "$(EMAIL)" || (echo "EMAIL is required" >&2; exit 2)
+	@test -n "$(NAME)" || (echo "NAME is required" >&2; exit 2)
+	$(DEV_COMPOSE) run --rm api lume-admin create-user --email "$(EMAIL)" --display-name "$(NAME)"
 
 migrate: ## Apply migrations to the development database explicitly
 	$(DEV_COMPOSE) --profile tools run --rm migrate
@@ -71,3 +79,27 @@ api-contract: ## Regenerate OpenAPI and TypeScript API types
 compose-validate: ## Validate development and test Compose files
 	$(DEV_COMPOSE) config --quiet
 	$(TEST_COMPOSE) config --quiet
+
+prod-validate: ## Validate resolved production Compose configuration
+	$(PROD_COMPOSE) config --quiet
+
+prod-build: ## Build local production API and gateway images
+	$(PROD_COMPOSE) build api gateway
+
+prod-migrate: ## Explicitly apply production migrations
+	$(PROD_COMPOSE) --profile tools run --rm migrate
+
+prod-up: ## Reconcile the Lume production services after migration
+	$(PROD_COMPOSE) up -d --no-build db api gateway
+
+admin-create: ## Interactively create a user; usage: make admin-create EMAIL=... NAME='...'
+	@test -n "$(EMAIL)" || (echo "EMAIL is required" >&2; exit 2)
+	@test -n "$(NAME)" || (echo "NAME is required" >&2; exit 2)
+	$(PROD_COMPOSE) --profile tools run --rm admin create-user --email "$(EMAIL)" --display-name "$(NAME)"
+
+backup: ## Create an encrypted production database backup
+	./scripts/backup.sh
+
+restore-verify: ## Restore an encrypted backup in isolation; usage: make restore-verify FILE=...
+	@test -n "$(FILE)" || (echo "FILE is required" >&2; exit 2)
+	./scripts/restore-verify.sh "$(FILE)"

@@ -6,6 +6,7 @@ from sqlalchemy.orm import Session
 
 from lume.auth.dependencies import CsrfAuth, CurrentAuth
 from lume.auth.models import AuthSession
+from lume.auth.rate_limit import login_rate_limiter
 from lume.auth.schemas import SessionCreate, SessionListItem, SessionResponse
 from lume.auth.service import authenticate_user, create_session
 from lume.core.config import Settings, get_settings
@@ -20,13 +21,25 @@ router = APIRouter(prefix="/api/v1/auth", tags=["authentication"])
 @router.post("/sessions", response_model=SessionResponse, status_code=status.HTTP_201_CREATED)
 def login(
     payload: SessionCreate,
+    request: Request,
     response: Response,
     db: Annotated[Session, Depends(get_db)],
     settings: Annotated[Settings, Depends(get_settings)],
 ) -> SessionResponse:
+    client_ip = request.client.host if request.client is not None else "unknown"
+    rate_key = login_rate_limiter.key(str(payload.email), client_ip)
+    retry_after = login_rate_limiter.retry_after(rate_key)
+    if retry_after is not None:
+        raise HTTPException(
+            status_code=429,
+            detail="Too many login attempts. Try again later.",
+            headers={"Retry-After": str(retry_after)},
+        )
     user = authenticate_user(db, str(payload.email), payload.password)
     if user is None:
+        login_rate_limiter.record_failure(rate_key)
         raise HTTPException(status_code=401, detail="Invalid email or password")
+    login_rate_limiter.clear(rate_key)
     created = create_session(db, user, payload.transport, payload.device_label)
     db.commit()
     csrf_token: str | None = None

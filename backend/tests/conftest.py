@@ -6,6 +6,7 @@ from sqlalchemy import delete
 
 from lume.accounts.models import Account
 from lume.auth.models import AuthSession
+from lume.auth.rate_limit import login_rate_limiter
 from lume.budgets.models import BudgetCategoryLimit, BudgetPeriod
 from lume.categories.defaults import seed_default_categories
 from lume.categories.models import Category
@@ -19,6 +20,7 @@ from lume.users.models import User
 
 @pytest.fixture(autouse=True)
 def clean_database() -> Generator[None]:
+    login_rate_limiter.reset()
     with SessionFactory.begin() as session:
         session.execute(delete(RecurringOccurrence))
         session.execute(delete(RecurringTemplate))

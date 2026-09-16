@@ -17,3 +17,10 @@ def test_openapi_uses_versioned_path() -> None:
 
     assert response.status_code == 200
     assert response.json()["info"]["title"] == "Lume API"
+
+
+def test_readiness_requires_current_migration(client: TestClient) -> None:
+    response = client.get("/readyz")
+
+    assert response.status_code == 200
+    assert response.json() == {"status": "ready"}

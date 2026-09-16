@@ -85,7 +85,8 @@ def require_csrf(
 ) -> AuthContext:
     if auth.session.transport == "bearer":
         return auth
-    if request.headers.get("origin") != settings.public_origin:
+    allowed_origins = {settings.public_origin, *settings.allowed_origins}
+    if request.headers.get("origin") not in allowed_origins:
         raise HTTPException(status_code=403, detail="Invalid request origin")
     if csrf_token is None or not csrf_token_matches(
         csrf_token, auth.raw_token, settings.resolved_session_secret

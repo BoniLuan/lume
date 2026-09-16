@@ -1,6 +1,6 @@
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { LogOut, ShieldCheck, Smartphone } from "lucide-react";
-import { useEffect, useState } from "react";
+import { useState } from "react";
 
 import { api } from "../api/client";
 import type { SessionItem, User } from "../api/types";
@@ -12,7 +12,6 @@ import { ErrorNotice, Loading } from "../components/ui/states";
 
 export function SettingsRoute() {
   const { session } = useSession(); const queryClient = useQueryClient(); const [name, setName] = useState(session?.user.display_name ?? "");
-  useEffect(() => setName(session?.user.display_name ?? ""), [session]);
   const sessions = useQuery({ queryKey: ["sessions"], queryFn: () => api<SessionItem[]>("/api/v1/auth/sessions") });
   const update = useMutation({ mutationFn: () => api<User>("/api/v1/users/me", { method: "PATCH", body: { display_name: name } }), onSuccess: async () => { await queryClient.invalidateQueries({ queryKey: ["session"] }); } });
   const revoke = useMutation({ mutationFn: (id: string) => api<void>(`/api/v1/auth/sessions/${id}`, { method: "DELETE" }), onSuccess: () => queryClient.invalidateQueries({ queryKey: ["sessions"] }) });

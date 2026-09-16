@@ -18,8 +18,9 @@ playwright-report/
 test-results/
 
 .local/
+.secrets/
+backups/
 *.log
 .DS_Store
 .idea/
 .vscode/
-
