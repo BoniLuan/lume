@@ -73,3 +73,57 @@ def test_fixture_seeds_user_owned_categories(user: User) -> None:
             select(func.count()).select_from(Category).where(Category.user_id == user.id)
         )
     assert count == 11
+
+
+def test_password_change_verifies_current_and_revokes_all_sessions(
+    client: TestClient,
+    user: User,
+    auth_headers: dict[str, str],
+) -> None:
+    bearer_login = client.post(
+        "/api/v1/auth/sessions",
+        json={
+            "email": user.email,
+            "password": "correct horse battery staple",
+            "transport": "bearer",
+        },
+    )
+    bearer_token = bearer_login.json()["token"]
+
+    rejected = client.put(
+        "/api/v1/users/me/password",
+        headers=auth_headers,
+        json={
+            "current_password": "incorrect password",
+            "new_password": "a different secure password",
+        },
+    )
+    assert rejected.status_code == 400
+    assert client.get("/api/v1/auth/session").status_code == 200
+
+    changed = client.put(
+        "/api/v1/users/me/password",
+        headers=auth_headers,
+        json={
+            "current_password": "correct horse battery staple",
+            "new_password": "a different secure password",
+        },
+    )
+    assert changed.status_code == 204
+    assert client.get("/api/v1/auth/session").status_code == 401
+    bearer_session = client.get(
+        "/api/v1/auth/session",
+        headers={"Authorization": f"Bearer {bearer_token}"},
+    )
+    assert bearer_session.status_code == 401
+
+    old_login = client.post(
+        "/api/v1/auth/sessions",
+        json={"email": user.email, "password": "correct horse battery staple"},
+    )
+    new_login = client.post(
+        "/api/v1/auth/sessions",
+        json={"email": user.email, "password": "a different secure password"},
+    )
+    assert old_login.status_code == 401
+    assert new_login.status_code == 201

@@ -77,6 +77,8 @@ def update_account(
     values = {**account.__dict__, **payload.model_dump(exclude_unset=True)}
     if values["account_type"] == "credit_card" and values["account_class"] != "liability":
         raise HTTPException(status_code=422, detail="Credit cards must be liability accounts")
+    if values["account_type"] == "receivable" and values["account_class"] != "asset":
+        raise HTTPException(status_code=422, detail="Receivable accounts must be asset accounts")
     for field, value in payload.model_dump(exclude_unset=True).items():
         setattr(account, field, value)
     db.commit()

@@ -22,7 +22,7 @@ routing. Production networks and DNS aliases are project-prefixed where shared.
 Each module owns its models, schemas, routes, and domain services:
 
 - `auth` and `users`: identity, passwords, revocable sessions, CSRF, profile;
-- `accounts`: asset/liability containers and reconciled balances;
+- `accounts`: asset, liability, and receivable containers with reconciled balances;
 - `categories`: user-owned income/expense classification;
 - `transactions`: income, expense, transfers, retry safety, and voiding;
 - `budgets`: monthly overall and optional category limits;
@@ -52,8 +52,16 @@ Account balance is:
 opening + income - expenses - outgoing transfers + incoming transfers
 ```
 
-Credit cards are liability accounts. Their stored negative balance is presented as
-positive “amount owed” in the web client.
+Credit cards are liability accounts. Purchases are expenses recorded on the card;
+payments are transfers from an asset account to the card, so the purchase affects
+spending once and the payment only settles the liability. Their stored negative
+balance is presented as positive “amount owed” in the web client.
+
+Money lent or awaiting reimbursement uses an asset-class `receivable` account.
+Lending and principal repayment are transfers through that account, so neither is
+reported as spending or income. Any fee or interest is recorded separately as
+income. This keeps cash balances and monthly performance accurate without adding a
+full double-entry ledger.
 
 ## Authentication
 
@@ -64,7 +72,8 @@ opaque token as a bearer credential; bearer requests do not use CSRF.
 
 Sessions are revocable and have idle plus absolute expiry. Argon2id hashes
 passwords. Registration is closed; operators create users and reset passwords with
-`lume-admin`, which also revokes sessions after a reset.
+`lume-admin`. Authenticated users can change their password in Settings after
+confirming the current password. Both flows revoke every existing session.
 
 ## Frontend
 

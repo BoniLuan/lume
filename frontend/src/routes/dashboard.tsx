@@ -12,8 +12,8 @@ import { currentMonth, displayDate, monthLabel } from "../lib/dates";
 export function DashboardRoute() {
   const month = currentMonth();
   const dashboard = useQuery({ queryKey: ["dashboard", month], queryFn: () => api<Dashboard>(`/api/v1/dashboard?month=${month}`) });
-  const accounts = useQuery({ queryKey: ["accounts"], queryFn: () => api<Account[]>("/api/v1/accounts") });
-  const categories = useQuery({ queryKey: ["categories"], queryFn: () => api<Category[]>("/api/v1/categories") });
+  const accounts = useQuery({ queryKey: ["accounts"], queryFn: () => api<Account[]>("/api/v1/accounts?include_archived=true") });
+  const categories = useQuery({ queryKey: ["categories"], queryFn: () => api<Category[]>("/api/v1/categories?include_archived=true") });
   if (dashboard.isPending) return <div className="page"><Loading label="Building your overview" /></div>;
   if (dashboard.error) return <div className="page"><ErrorNotice message={dashboard.error.message} /></div>;
   const data = dashboard.data;
@@ -25,7 +25,7 @@ export function DashboardRoute() {
     <section className="metric-grid">
       <article className="metric-card"><span className="metric-icon positive"><ArrowUpRight /></span><small>Earned</small><strong>{currency(data.income, data.currency)}</strong><p>Income this month</p></article>
       <article className="metric-card"><span className="metric-icon negative"><ArrowDownRight /></span><small>Spent</small><strong>{currency(data.expense, data.currency)}</strong><p>Expenses this month</p></article>
-      <article className="metric-card"><span className="metric-icon neutral"><Wallet /></span><small>Net change</small><strong>{currency(data.net, data.currency)}</strong><p>Income less expenses</p></article>
+      <article className="metric-card"><span className="metric-icon neutral"><Wallet /></span><small>Monthly result</small><strong>{currency(data.net, data.currency)}</strong><p>Income after spending</p></article>
       <article className="metric-card accent"><span className="metric-icon"><PiggyBank /></span><small>Budget remaining</small><strong>{data.budget ? currency(data.budget.remaining, data.currency) : "Not set"}</strong><p>{data.budget ? `${percentage(data.budget.percentage_used)} used` : "Set a monthly intention"}</p></article>
     </section>
     <div className="dashboard-grid">

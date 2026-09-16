@@ -209,3 +209,100 @@ def test_credit_card_must_be_a_liability(
         },
     )
     assert response.status_code == 422
+
+
+def test_receivable_and_credit_card_transfers_do_not_double_count(
+    client: TestClient,
+    user: User,
+    auth_headers: dict[str, str],
+) -> None:
+    checking = _create_account(client, auth_headers, "Checking")
+    receivable = _create_account(client, auth_headers, "Money owed", "receivable", "asset")
+    card = _create_account(client, auth_headers, "Credit card", "credit_card", "liability")
+    expense_category = _category_id(user.id, "expense")
+
+    income = client.post(
+        "/api/v1/transactions",
+        headers=auth_headers,
+        json={
+            "kind": "income",
+            "account_id": checking["id"],
+            "category_id": _category_id(user.id, "income"),
+            "amount": "1000.0000",
+            "description": "Salary",
+            "effective_date": "2026-09-01",
+        },
+    )
+    loan = client.post(
+        "/api/v1/transactions",
+        headers=auth_headers,
+        json={
+            "kind": "transfer",
+            "account_id": checking["id"],
+            "destination_account_id": receivable["id"],
+            "amount": "150.0000",
+            "description": "Loan to friend",
+            "effective_date": "2026-09-02",
+        },
+    )
+    repayment = client.post(
+        "/api/v1/transactions",
+        headers=auth_headers,
+        json={
+            "kind": "transfer",
+            "account_id": receivable["id"],
+            "destination_account_id": checking["id"],
+            "amount": "150.0000",
+            "description": "Friend repayment",
+            "effective_date": "2026-09-03",
+        },
+    )
+    purchase = client.post(
+        "/api/v1/transactions",
+        headers=auth_headers,
+        json={
+            "kind": "expense",
+            "account_id": card["id"],
+            "category_id": expense_category,
+            "amount": "100.0000",
+            "description": "Groceries",
+            "effective_date": "2026-09-04",
+        },
+    )
+    payment = client.post(
+        "/api/v1/transactions",
+        headers=auth_headers,
+        json={
+            "kind": "transfer",
+            "account_id": checking["id"],
+            "destination_account_id": card["id"],
+            "amount": "100.0000",
+            "description": "Card payment",
+            "effective_date": "2026-09-05",
+        },
+    )
+    assert all(item.status_code == 201 for item in (income, loan, repayment, purchase, payment))
+
+    balances = {
+        item["name"]: item["current_balance"] for item in client.get("/api/v1/accounts").json()
+    }
+    assert balances == {"Checking": "900.0000", "Money owed": "0.0000", "Credit card": "0.0000"}
+    dashboard = client.get("/api/v1/dashboard?month=2026-09").json()
+    assert dashboard["income"] == "1000.0000"
+    assert dashboard["expense"] == "100.0000"
+    assert dashboard["net"] == "900.0000"
+
+
+def test_receivable_must_be_an_asset(client: TestClient, auth_headers: dict[str, str]) -> None:
+    response = client.post(
+        "/api/v1/accounts",
+        headers=auth_headers,
+        json={
+            "name": "Invalid receivable",
+            "account_type": "receivable",
+            "account_class": "liability",
+            "opening_balance": "0.0000",
+            "opened_on": "2026-09-01",
+        },
+    )
+    assert response.status_code == 422

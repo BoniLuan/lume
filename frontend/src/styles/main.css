@@ -346,3 +346,29 @@ select.input { padding-right: 2rem; }
 @media (prefers-reduced-motion: reduce) {
   *, *::before, *::after { scroll-behavior: auto !important; animation-duration: .01ms !important; transition-duration: .01ms !important; }
 }
+
+/* Editable finance flows */
+.form-helper { grid-column: 1 / -1; margin: -.25rem 0 0; padding: .65rem .75rem; color: #49625a; background: var(--sage); border-radius: 9px; font-size: .72rem; line-height: 1.5; }
+.form-helper.warning { color: #80503d; background: #f5dfd6; }
+.panel-note { margin: 1rem 0 0; padding: .75rem; color: var(--muted); background: #f5f2e9; border-radius: 9px; font-size: .72rem; line-height: 1.5; }
+.transaction-list article { grid-template-columns: 38px 1fr auto auto; }
+.transaction-list .row-actions, .category-list .row-actions, .account-card-head .row-actions { display: flex; gap: .15rem; }
+.category-list > div { grid-template-columns: 10px 1fr auto; }
+.checkbox-row { grid-column: 1 / -1; display: flex; align-items: center; gap: .5rem; color: var(--ink); font-size: .78rem; }
+.checkbox-row input { width: 17px; height: 17px; accent-color: var(--forest); }
+.password-form { display: grid; grid-template-columns: 44px repeat(3, minmax(150px, 1fr)) auto; gap: .8rem; align-items: end; }
+.password-form .error-notice { grid-column: 2 / -1; }
+.password-icon { width: 42px; height: 42px; display: grid; place-items: center; align-self: end; color: var(--forest); background: var(--sage); border-radius: 10px; }
+
+@media (max-width: 1080px) {
+  .password-form { grid-template-columns: 44px 1fr 1fr; }
+  .password-form .field:last-of-type { grid-column: 2 / 3; }
+}
+
+@media (max-width: 760px) {
+  .transaction-list article { grid-template-columns: 36px 1fr auto; }
+  .transaction-list .row-actions { grid-column: 2 / -1; justify-content: flex-end; }
+  .password-form { grid-template-columns: 1fr; }
+  .password-icon { display: none; }
+  .password-form .field:last-of-type, .password-form .error-notice { grid-column: 1; }
+}

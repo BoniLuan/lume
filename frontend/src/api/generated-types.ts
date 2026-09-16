@@ -440,6 +440,23 @@ export interface paths {
         patch: operations["update_me_api_v1_users_me_patch"];
         trace?: never;
     };
+    "/api/v1/users/me/password": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        /** Change Password */
+        put: operations["change_password_api_v1_users_me_password_put"];
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
 }
 export type webhooks = Record<string, never>;
 export interface components {
@@ -455,7 +472,7 @@ export interface components {
              * Account Type
              * @enum {string}
              */
-            account_type: "checking" | "cash" | "savings" | "credit_card" | "other";
+            account_type: "checking" | "cash" | "savings" | "credit_card" | "receivable" | "other";
             /** Name */
             name: string;
             /**
@@ -480,7 +497,7 @@ export interface components {
              * Account Type
              * @enum {string}
              */
-            account_type: "checking" | "cash" | "savings" | "credit_card" | "other";
+            account_type: "checking" | "cash" | "savings" | "credit_card" | "receivable" | "other";
             /** Archived At */
             archived_at: string | null;
             /**
@@ -514,7 +531,7 @@ export interface components {
             /** Account Class */
             account_class?: ("asset" | "liability") | null;
             /** Account Type */
-            account_type?: ("checking" | "cash" | "savings" | "credit_card" | "other") | null;
+            account_type?: ("checking" | "cash" | "savings" | "credit_card" | "receivable" | "other") | null;
             /** Name */
             name?: string | null;
             /** Opened On */
@@ -688,6 +705,13 @@ export interface components {
             template_id: string;
             /** Transaction Id */
             transaction_id: string | null;
+        };
+        /** PasswordChange */
+        PasswordChange: {
+            /** Current Password */
+            current_password: string;
+            /** New Password */
+            new_password: string;
         };
         /** RecurringCreate */
         RecurringCreate: {
@@ -2221,6 +2245,40 @@ export interface operations {
                 content: {
                     "application/json": components["schemas"]["UserResponse"];
                 };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    change_password_api_v1_users_me_password_put: {
+        parameters: {
+            query?: never;
+            header?: {
+                "X-CSRF-Token"?: string | null;
+                authorization?: string | null;
+            };
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["PasswordChange"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            204: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
             };
             /** @description Validation Error */
             422: {
