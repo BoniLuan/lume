@@ -8,10 +8,13 @@ from sqlalchemy.exc import SQLAlchemyError
 
 from lume.accounts.api import router as accounts_router
 from lume.auth.api import router as auth_router
+from lume.budgets.api import router as budgets_router
 from lume.categories.api import router as categories_router
 from lume.core import models as domain_models  # noqa: F401
 from lume.core.config import get_settings
 from lume.core.database import SessionFactory
+from lume.recurring.api import router as recurring_router
+from lume.reporting.api import router as reporting_router
 from lume.transactions.api import router as transactions_router
 from lume.users.api import router as users_router
 
@@ -46,6 +49,9 @@ app.include_router(users_router)
 app.include_router(accounts_router)
 app.include_router(categories_router)
 app.include_router(transactions_router)
+app.include_router(budgets_router)
+app.include_router(recurring_router)
+app.include_router(reporting_router)
 
 
 @app.get("/healthz", include_in_schema=False)

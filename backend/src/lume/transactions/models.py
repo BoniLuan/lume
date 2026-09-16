@@ -50,6 +50,7 @@ class Transaction(UUIDPrimaryKeyMixin, TimestampMixin, Base):
             ondelete="RESTRICT",
         ),
         UniqueConstraint("user_id", "client_request_id", name="uq_transactions_user_request"),
+        UniqueConstraint("id", "user_id", name="uq_transactions_id_user_id"),
         Index("ix_transactions_user_date_id", "user_id", "effective_date", "id"),
         Index("ix_transactions_user_kind_date", "user_id", "kind", "effective_date"),
         Index("ix_transactions_user_account_date", "user_id", "account_id", "effective_date"),

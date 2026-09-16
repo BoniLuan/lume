@@ -6,11 +6,13 @@ from sqlalchemy import delete
 
 from lume.accounts.models import Account
 from lume.auth.models import AuthSession
+from lume.budgets.models import BudgetCategoryLimit, BudgetPeriod
 from lume.categories.defaults import seed_default_categories
 from lume.categories.models import Category
 from lume.core.database import SessionFactory
 from lume.core.security import hash_password
 from lume.main import app
+from lume.recurring.models import RecurringOccurrence, RecurringTemplate
 from lume.transactions.models import Transaction
 from lume.users.models import User
 
@@ -18,6 +20,10 @@ from lume.users.models import User
 @pytest.fixture(autouse=True)
 def clean_database() -> Generator[None]:
     with SessionFactory.begin() as session:
+        session.execute(delete(RecurringOccurrence))
+        session.execute(delete(RecurringTemplate))
+        session.execute(delete(BudgetCategoryLimit))
+        session.execute(delete(BudgetPeriod))
         session.execute(delete(Transaction))
         session.execute(delete(Account))
         session.execute(delete(AuthSession))
@@ -25,6 +31,10 @@ def clean_database() -> Generator[None]:
         session.execute(delete(User))
     yield
     with SessionFactory.begin() as session:
+        session.execute(delete(RecurringOccurrence))
+        session.execute(delete(RecurringTemplate))
+        session.execute(delete(BudgetCategoryLimit))
+        session.execute(delete(BudgetPeriod))
         session.execute(delete(Transaction))
         session.execute(delete(Account))
         session.execute(delete(AuthSession))

@@ -1,7 +1,19 @@
 from lume.accounts.models import Account
 from lume.auth.models import AuthSession
+from lume.budgets.models import BudgetCategoryLimit, BudgetPeriod
 from lume.categories.models import Category
+from lume.recurring.models import RecurringOccurrence, RecurringTemplate
 from lume.transactions.models import Transaction
 from lume.users.models import User
 
-__all__ = ["Account", "AuthSession", "Category", "Transaction", "User"]
+__all__ = [
+    "Account",
+    "AuthSession",
+    "BudgetCategoryLimit",
+    "BudgetPeriod",
+    "Category",
+    "RecurringOccurrence",
+    "RecurringTemplate",
+    "Transaction",
+    "User",
+]
