@@ -1,4 +1,4 @@
-FROM node:24.11.0-bookworm-slim AS web-build
+FROM node:26.8-bookworm-slim AS web-build
 
 ENV NPM_CONFIG_UPDATE_NOTIFIER=false \
     NPM_CONFIG_FUND=false
