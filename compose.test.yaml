@@ -1,0 +1,59 @@
+name: lume-test
+
+services:
+  db:
+    image: mariadb:11.4.13
+    command:
+      - --character-set-server=utf8mb4
+      - --collation-server=utf8mb4_uca1400_ai_ci
+      - --skip-name-resolve
+    environment:
+      MARIADB_DATABASE: lume_test
+      MARIADB_USER: lume_test
+      MARIADB_PASSWORD: lume_test_ephemeral
+      MARIADB_ROOT_PASSWORD: lume_root_test_ephemeral
+      TZ: UTC
+    tmpfs:
+      - /var/lib/mysql:size=256m,mode=0700
+    networks: [test]
+    healthcheck:
+      test: [CMD, healthcheck.sh, --connect, --innodb_initialized]
+      interval: 2s
+      timeout: 2s
+      retries: 45
+      start_period: 10s
+    mem_limit: 384m
+    cpus: 0.75
+    logging:
+      driver: json-file
+      options: {max-size: 5m, max-file: "2"}
+
+  tests:
+    build:
+      context: ./backend
+      target: development
+    environment:
+      LUME_ENV: test
+      LUME_DATABASE_HOST: db
+      LUME_DATABASE_PORT: "3306"
+      LUME_DATABASE_NAME: lume_test
+      LUME_DATABASE_USER: lume_test
+      LUME_DATABASE_PASSWORD: lume_test_ephemeral
+      LUME_SECURE_COOKIES: "false"
+    depends_on:
+      db:
+        condition: service_healthy
+    networks: [test]
+    command: [sh, -c, "alembic upgrade head && pytest -q"]
+    read_only: true
+    tmpfs:
+      - /tmp:size=64m,mode=1777
+    cap_drop: [ALL]
+    security_opt: [no-new-privileges:true]
+    mem_limit: 512m
+    cpus: 1.0
+
+networks:
+  test:
+    internal: true
+

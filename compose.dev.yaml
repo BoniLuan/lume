@@ -1,0 +1,98 @@
+name: lume-dev
+
+x-api-environment: &api-environment
+  LUME_ENV: development
+  LUME_DATABASE_HOST: db
+  LUME_DATABASE_PORT: "3306"
+  LUME_DATABASE_NAME: lume_dev
+  LUME_DATABASE_USER: lume_dev
+  LUME_DATABASE_PASSWORD: ${LUME_DEV_DB_PASSWORD:-lume_dev_only}
+  LUME_ALLOWED_ORIGINS: '["http://127.0.0.1:15173","http://localhost:15173"]'
+  LUME_SECURE_COOKIES: "false"
+
+x-api-common: &api-common
+  build:
+    context: ./backend
+    target: development
+  environment: *api-environment
+  depends_on:
+    db:
+      condition: service_healthy
+  networks: [app]
+  init: true
+  security_opt: [no-new-privileges:true]
+  cap_drop: [ALL]
+  logging: &bounded-logs
+    driver: json-file
+    options:
+      max-size: 10m
+      max-file: "3"
+
+services:
+  db:
+    image: mariadb:11.4.13
+    command:
+      - --character-set-server=utf8mb4
+      - --collation-server=utf8mb4_uca1400_ai_ci
+      - --innodb-buffer-pool-size=192M
+      - --max-connections=40
+      - --skip-name-resolve
+    environment:
+      MARIADB_DATABASE: lume_dev
+      MARIADB_USER: lume_dev
+      MARIADB_PASSWORD: ${LUME_DEV_DB_PASSWORD:-lume_dev_only}
+      MARIADB_ROOT_PASSWORD: ${LUME_DEV_ROOT_PASSWORD:-lume_root_dev_only}
+      TZ: UTC
+    volumes:
+      - mariadb_data:/var/lib/mysql
+    networks: [app]
+    healthcheck:
+      test: [CMD, healthcheck.sh, --connect, --innodb_initialized]
+      interval: 3s
+      timeout: 3s
+      retries: 30
+      start_period: 15s
+    mem_limit: 512m
+    cpus: 0.75
+    restart: unless-stopped
+    logging: *bounded-logs
+
+  api:
+    <<: *api-common
+    command: [fastapi, dev, --host, 0.0.0.0, --port, "8000", src/lume/main.py]
+    volumes:
+      - ./backend/src:/app/src:ro
+      - ./backend/tests:/app/tests:ro
+      - ./backend/migrations:/app/migrations:ro
+      - ./backend/alembic.ini:/app/alembic.ini:ro
+    ports:
+      - 127.0.0.1:18100:8000
+    healthcheck:
+      test: [CMD, python, -c, "import urllib.request; urllib.request.urlopen('http://127.0.0.1:8000/healthz', timeout=2)"]
+      interval: 10s
+      timeout: 3s
+      retries: 5
+      start_period: 10s
+    mem_limit: 256m
+    cpus: 0.75
+    restart: unless-stopped
+
+  migrate:
+    <<: *api-common
+    profiles: [tools]
+    command: [alembic, upgrade, head]
+    volumes:
+      - ./backend/src:/app/src:ro
+      - ./backend/migrations:/app/migrations
+      - ./backend/alembic.ini:/app/alembic.ini:ro
+    restart: "no"
+    logging:
+      driver: none
+
+volumes:
+  mariadb_data:
+
+networks:
+  app:
+    internal: true
+
