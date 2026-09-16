@@ -193,6 +193,23 @@ def test_cross_owner_account_is_rejected(
     assert response.json()["detail"] == "source account is unavailable"
 
 
+def test_account_type_and_class_can_be_corrected(
+    client: TestClient,
+    auth_headers: dict[str, str],
+) -> None:
+    account = _create_account(client, auth_headers, "Mistaken account", "other", "liability")
+
+    corrected = client.patch(
+        f"/api/v1/accounts/{account['id']}",
+        headers=auth_headers,
+        json={"account_type": "checking", "account_class": "asset"},
+    )
+
+    assert corrected.status_code == 200
+    assert corrected.json()["account_type"] == "checking"
+    assert corrected.json()["account_class"] == "asset"
+
+
 def test_credit_card_must_be_a_liability(
     client: TestClient,
     auth_headers: dict[str, str],
