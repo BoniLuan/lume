@@ -9,7 +9,7 @@ RUN npm ci
 COPY frontend/ ./
 RUN npm run build
 
-FROM nginxinc/nginx-unprivileged:1.30.4-alpine AS runtime
+FROM nginxinc/nginx-unprivileged:1.31.6-alpine AS runtime
 
 COPY gateway/nginx.conf /etc/nginx/conf.d/default.conf
 COPY --from=web-build /build/dist /usr/share/nginx/html
