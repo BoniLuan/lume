@@ -77,6 +77,32 @@ services:
     cpus: 0.75
     restart: unless-stopped
 
+  web:
+    build:
+      context: ./frontend
+      target: development
+    environment:
+      CHOKIDAR_USEPOLLING: "true"
+    command: [npm, run, dev, --, --host, 0.0.0.0]
+    volumes:
+      - ./frontend/src:/app/src:ro
+      - ./frontend/public:/app/public:ro
+      - ./frontend/index.html:/app/index.html:ro
+      - ./frontend/vite.config.ts:/app/vite.config.ts:ro
+    ports:
+      - 127.0.0.1:15173:5173
+    depends_on:
+      api:
+        condition: service_healthy
+    networks: [app]
+    init: true
+    security_opt: [no-new-privileges:true]
+    cap_drop: [ALL]
+    mem_limit: 384m
+    cpus: 0.75
+    restart: unless-stopped
+    logging: *bounded-logs
+
   migrate:
     <<: *api-common
     profiles: [tools]
@@ -95,4 +121,3 @@ volumes:
 networks:
   app:
     internal: true
-

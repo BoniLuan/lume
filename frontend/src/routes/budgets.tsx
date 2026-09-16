@@ -1,0 +1,28 @@
+import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
+import { Plus, Trash2 } from "lucide-react";
+import { useState } from "react";
+
+import { ApiError, api } from "../api/client";
+import type { Budget, Category } from "../api/types";
+import { PageHeader, Panel } from "../components/layout/page";
+import { Button } from "../components/ui/button";
+import { Field, Input, Select } from "../components/ui/field";
+import { Empty, ErrorNotice, Loading } from "../components/ui/states";
+import { currency, percentage } from "../lib/currency";
+import { currentMonth, monthLabel } from "../lib/dates";
+
+export function BudgetsRoute() {
+  const queryClient = useQueryClient(); const [month, setMonth] = useState(currentMonth()); const [total, setTotal] = useState(""); const [categoryId, setCategoryId] = useState(""); const [limit, setLimit] = useState("");
+  const budget = useQuery({ queryKey: ["budget", month], queryFn: async () => { try { return await api<Budget>(`/api/v1/budgets/${month}`); } catch (error) { if (error instanceof ApiError && error.status === 404) return null; throw error; } } });
+  const categories = useQuery({ queryKey: ["categories", "expense"], queryFn: () => api<Category[]>("/api/v1/categories?kind=expense") });
+  const save = useMutation({ mutationFn: () => api<Budget>(`/api/v1/budgets/${month}`, { method: "PUT", body: { total_limit: total } }), onSuccess: async (data) => { queryClient.setQueryData(["budget", month], data); await queryClient.invalidateQueries({ queryKey: ["dashboard"] }); setTotal(""); } });
+  const saveCategory = useMutation({ mutationFn: () => api<Budget>(`/api/v1/budgets/${month}/categories/${categoryId}`, { method: "PUT", body: { limit_amount: limit } }), onSuccess: (data) => { queryClient.setQueryData(["budget", month], data); setLimit(""); setCategoryId(""); } });
+  const removeCategory = useMutation({ mutationFn: (id: string) => api<void>(`/api/v1/budgets/${month}/categories/${id}`, { method: "DELETE" }), onSuccess: () => queryClient.invalidateQueries({ queryKey: ["budget", month] }) });
+  const availableCategories = categories.data?.filter((item) => !budget.data?.categories.some((limitItem) => limitItem.category_id === item.id)) ?? [];
+  return <div className="page"><PageHeader eyebrow="Monthly intention" title="Budgets" description="Choose a useful limit, then watch your actual pace without rigid envelopes." action={<Input className="month-picker" type="month" value={month} onChange={(event) => setMonth(event.target.value)} aria-label="Budget month" />} />
+    {budget.isPending ? <Loading /> : budget.error ? <ErrorNotice message={budget.error.message} /> : !budget.data ? <Panel title={`Set a budget for ${monthLabel(month)}`}><form className="budget-create" onSubmit={(event) => { event.preventDefault(); save.mutate(); }}><Field label="Overall spending limit"><div className="amount-input"><span>R$</span><Input required autoFocus inputMode="decimal" value={total} onChange={(event) => setTotal(event.target.value)} placeholder="3,500.00" /></div></Field><Button type="submit" size="lg" disabled={save.isPending || !total}>{save.isPending ? "Saving…" : "Set monthly budget"}</Button>{save.error ? <ErrorNotice message={save.error.message} /> : null}</form></Panel> : <>
+      <Panel title={monthLabel(month)} subtitle="Overall budget"><div className="budget-hero"><div><strong>{currency(budget.data.spent)}</strong><span>spent of {currency(budget.data.total_limit)}</span></div><b>{percentage(budget.data.percentage_used)}</b></div><div className="progress large"><i className={Number(budget.data.percentage_used) > 100 ? "over" : ""} style={{ width: `${Math.min(Number(budget.data.percentage_used), 100)}%` }} /></div><p className="muted">{currency(budget.data.remaining)} remaining.</p><form className="inline-budget-update" onSubmit={(event) => { event.preventDefault(); save.mutate(); }}><Input inputMode="decimal" value={total} onChange={(event) => setTotal(event.target.value)} placeholder="New overall limit" /><Button variant="secondary" type="submit" disabled={!total}>Update</Button></form></Panel>
+      <Panel title="Category limits" subtitle="Optional guide rails for the areas you care about"><form className="inline-form compact" onSubmit={(event) => { event.preventDefault(); saveCategory.mutate(); }}><Field label="Category"><Select required value={categoryId} onChange={(event) => setCategoryId(event.target.value)}><option value="">Choose category</option>{availableCategories.map((item) => <option key={item.id} value={item.id}>{item.name}</option>)}</Select></Field><Field label="Limit"><Input required inputMode="decimal" value={limit} onChange={(event) => setLimit(event.target.value)} placeholder="500.00" /></Field><Button type="submit" disabled={!categoryId || !limit}><Plus size={17} /> Add limit</Button></form>{budget.data.categories.length ? <div className="budget-categories">{budget.data.categories.map((item) => <article key={item.category_id}><div><strong>{item.category_name}</strong><span>{currency(item.spent)} of {currency(item.limit_amount)}</span></div><div className="progress"><i className={Number(item.percentage_used) > 100 ? "over" : ""} style={{ width: `${Math.min(Number(item.percentage_used), 100)}%` }} /></div><b>{percentage(item.percentage_used)}</b><Button variant="ghost" size="icon" onClick={() => removeCategory.mutate(item.category_id)} aria-label={`Remove ${item.category_name} limit`}><Trash2 size={16} /></Button></article>)}</div> : <Empty title="No category limits" body="Your overall budget works on its own. Add category limits only where useful." />}</Panel>
+    </>}
+  </div>;
+}
