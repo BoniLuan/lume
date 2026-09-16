@@ -1,5 +1,6 @@
 from functools import lru_cache
 from pathlib import Path
+from secrets import token_urlsafe
 from typing import Literal
 
 from pydantic import Field, field_validator
@@ -19,6 +20,9 @@ class Settings(BaseSettings):
     database_password_file: Path | None = None
     allowed_origins: list[str] = Field(default_factory=list)
     secure_cookies: bool = True
+    public_origin: str = "http://127.0.0.1:15173"
+    session_secret: str | None = None
+    session_secret_file: Path | None = None
     log_level: str = "INFO"
 
     @field_validator("database_name")
@@ -50,6 +54,28 @@ class Settings(BaseSettings):
             database=self.database_name,
             query={"charset": "utf8mb4"},
         )
+
+    @property
+    def resolved_session_secret(self) -> bytes:
+        if self.session_secret_file is not None:
+            value = self.session_secret_file.read_text(encoding="utf-8").strip()
+        elif self.session_secret is not None:
+            value = self.session_secret
+        elif self.env in {"development", "test"}:
+            value = "lume-local-session-secret-not-for-production"
+        else:
+            raise ValueError("production requires a session secret file")
+        if len(value) < 32:
+            raise ValueError("session secret must contain at least 32 characters")
+        return value.encode()
+
+    @property
+    def session_cookie_name(self) -> str:
+        return "__Host-lume_session" if self.secure_cookies else "lume_session"
+
+    @staticmethod
+    def generate_session_secret() -> str:
+        return token_urlsafe(48)
 
 
 @lru_cache

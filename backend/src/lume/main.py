@@ -6,8 +6,11 @@ from fastapi.middleware.cors import CORSMiddleware
 from sqlalchemy import text
 from sqlalchemy.exc import SQLAlchemyError
 
+from lume.auth.api import router as auth_router
+from lume.core import models as domain_models  # noqa: F401
 from lume.core.config import get_settings
 from lume.core.database import SessionFactory
+from lume.users.api import router as users_router
 
 
 @asynccontextmanager
@@ -34,6 +37,9 @@ if settings.allowed_origins:
         allow_methods=["GET", "POST", "PUT", "PATCH", "DELETE"],
         allow_headers=["Content-Type", "Authorization", "X-CSRF-Token", "X-Request-ID"],
     )
+
+app.include_router(auth_router)
+app.include_router(users_router)
 
 
 @app.get("/healthz", include_in_schema=False)

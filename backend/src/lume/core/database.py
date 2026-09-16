@@ -1,10 +1,12 @@
 from collections.abc import Generator
 from datetime import datetime
+from uuid import UUID, uuid7
 
-from sqlalchemy import DateTime, MetaData, create_engine
+from sqlalchemy import CHAR, DateTime, MetaData, create_engine
 from sqlalchemy.orm import DeclarativeBase, Mapped, Session, mapped_column, sessionmaker
 
 from lume.core.config import get_settings
+from lume.core.time import utc_now
 
 NAMING_CONVENTION = {
     "ix": "ix_%(column_0_label)s",
@@ -19,9 +21,28 @@ class Base(DeclarativeBase):
     metadata = MetaData(naming_convention=NAMING_CONVENTION)
 
 
+class UUIDPrimaryKeyMixin:
+    id: Mapped[str] = mapped_column(
+        CHAR(36, collation="ascii_bin"),
+        primary_key=True,
+        default=lambda: str(uuid7()),
+    )
+
+
 class TimestampMixin:
-    created_at: Mapped[datetime] = mapped_column(DateTime(timezone=False), nullable=False)
-    updated_at: Mapped[datetime] = mapped_column(DateTime(timezone=False), nullable=False)
+    created_at: Mapped[datetime] = mapped_column(
+        DateTime(timezone=False), nullable=False, default=utc_now
+    )
+    updated_at: Mapped[datetime] = mapped_column(
+        DateTime(timezone=False),
+        nullable=False,
+        default=utc_now,
+        onupdate=utc_now,
+    )
+
+
+def uuid_string(value: UUID | str) -> str:
+    return str(value)
 
 
 settings = get_settings()
