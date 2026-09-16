@@ -11,11 +11,12 @@ RUN addgroup --system --gid 10001 lume \
 
 COPY --from=ghcr.io/astral-sh/uv:0.8.15 /uv /uvx /bin/
 COPY pyproject.toml uv.lock ./
-RUN uv sync --frozen --no-dev
+RUN uv sync --frozen --no-dev --no-install-project
 
 COPY alembic.ini ./
 COPY migrations ./migrations
 COPY src ./src
+RUN uv sync --frozen --no-dev
 
 USER 10001:10001
 

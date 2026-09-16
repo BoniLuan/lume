@@ -523,8 +523,10 @@ Do not add pie charts or decorative charts.
 - Owner-scoped queries everywhere; inaccessible IDs return 404.
 - SQLAlchemy parameter binding and reviewed parameterized aggregate SQL.
 - Separate MariaDB roles: `lume_app` for runtime DML and `lume_migrator` for DDL.
-- Production secrets under `/home/luan/.config/lume`, directories 0700 and files
-  0600. Prefer read-only secret files over passwords in container environment.
+- Production secrets under `/home/luan/.config/lume`, with a 0700 directory and
+  0444 files for Compose read-only, file-backed bind mounts. The private parent
+  directory prevents other host users from traversing to the files. Prefer these
+  mounts over passwords in container environment variables.
 - Non-root containers, read-only root filesystems, dropped capabilities,
   `no-new-privileges`, and bounded tmpfs.
 - CSP, HSTS, MIME sniffing protection, frame denial, strict referrer policy, and

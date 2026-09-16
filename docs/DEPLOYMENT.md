@@ -14,9 +14,11 @@ Create private secret files once:
 ```
 
 Files live under `/home/luan/.config/lume` with directory mode `0700` and file mode
-`0600`. Do not put them in the repository. Create an `age` identity, store its
-private key off-host, and put only the public recipient in
-`backup.age-recipient`.
+`0444`. Compose file-backed secrets are bind mounts and cannot remap ownership,
+so unprivileged container users require read permission on each mounted file. The
+private `0700` directory prevents other host users from traversing to them. Do not
+put them in the repository. Create an `age` identity, store its private key
+off-host, and put only the public recipient in `backup.age-recipient`.
 
 Validate configuration and build candidate images:
 
