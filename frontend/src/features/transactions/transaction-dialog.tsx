@@ -9,7 +9,7 @@ import { z } from "zod";
 import { api } from "../../api/client";
 import type { Account, Category, Transaction, TransactionCreate } from "../../api/types";
 import { Button } from "../../components/ui/button";
-import { Field, Input, Select } from "../../components/ui/field";
+import { Field, Input, MoneyInput, Select } from "../../components/ui/field";
 import { ErrorNotice } from "../../components/ui/states";
 import { todayInSaoPaulo } from "../../lib/dates";
 
@@ -169,7 +169,7 @@ export function TransactionDialog({
     <div className="dialog-heading"><div><span className="eyebrow">{transaction ? "Ledger correction" : "Quick entry"}</span><Dialog.Title>{transaction ? "Edit transaction" : "Add transaction"}</Dialog.Title></div><Dialog.Close asChild><Button variant="ghost" size="icon" aria-label="Close"><X size={20} /></Button></Dialog.Close></div>
     <Dialog.Description className="muted">{transaction ? "Changes immediately update balances, budgets, and reports." : "Record money movement in a few focused fields."}</Dialog.Description>
     <form className="form-grid" onSubmit={(event) => void form.handleSubmit((values) => save.mutate(values))(event)}>
-      <Field label="Amount" error={form.formState.errors.amount?.message}><div className="amount-input"><span>R$</span><Input autoFocus inputMode="decimal" placeholder="0.00" {...form.register("amount")} /></div></Field>
+      <Field label="Amount" error={form.formState.errors.amount?.message}><div className="amount-input"><span>R$</span><MoneyInput autoFocus placeholder="0.00" {...form.register("amount")} /></div></Field>
       <Field label="Type"><Select {...form.register("mode")}><option value="expense">Expense</option><option value="income">Income</option><option value="transfer">Transfer between accounts</option><option value="loan_out">Lend money</option><option value="loan_repayment">Record repayment</option><option value="credit_payment">Pay credit card</option></Select></Field>
       {helper ? <p className="form-helper">{helper}</p> : null}
       <Field label="Description" error={form.formState.errors.description?.message}><Input placeholder={mode === "expense" ? "e.g. Groceries" : mode === "income" ? "e.g. Salary" : "e.g. Repayment from Ana"} {...form.register("description")} /></Field>

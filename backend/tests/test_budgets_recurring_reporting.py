@@ -167,3 +167,96 @@ def test_duplicate_or_out_of_order_occurrence_is_rejected(
         json={"scheduled_for": "2026-09-23"},
     )
     assert response.status_code == 409
+
+
+def test_account_ledger_explains_balance_changes(
+    client: TestClient,
+    user: User,
+    auth_headers: dict[str, str],
+) -> None:
+    checking_id = _create_account(client, auth_headers, "Checking")
+    savings_id = _create_account(client, auth_headers, "Savings")
+    income = _category(user.id, "income")
+    expense = _category(user.id, "expense")
+
+    movements = [
+        {
+            "kind": "income",
+            "account_id": checking_id,
+            "category_id": income.id,
+            "amount": "500.0000",
+            "description": "Previous balance activity",
+            "effective_date": "2026-08-31",
+        },
+        {
+            "kind": "income",
+            "account_id": checking_id,
+            "category_id": income.id,
+            "amount": "1000.0000",
+            "description": "Salary",
+            "effective_date": "2026-09-01",
+        },
+        {
+            "kind": "expense",
+            "account_id": checking_id,
+            "category_id": expense.id,
+            "amount": "200.0000",
+            "description": "Groceries",
+            "effective_date": "2026-09-02",
+        },
+        {
+            "kind": "transfer",
+            "account_id": checking_id,
+            "destination_account_id": savings_id,
+            "category_id": None,
+            "amount": "100.0000",
+            "description": "Save money",
+            "effective_date": "2026-09-03",
+        },
+        {
+            "kind": "transfer",
+            "account_id": savings_id,
+            "destination_account_id": checking_id,
+            "category_id": None,
+            "amount": "25.0000",
+            "description": "Move back",
+            "effective_date": "2026-09-04",
+        },
+    ]
+    for movement in movements:
+        response = client.post("/api/v1/transactions", headers=auth_headers, json=movement)
+        assert response.status_code == 201, response.text
+
+    response = client.get(
+        "/api/v1/reports/account-ledger",
+        params={
+            "account_id": checking_id,
+            "start_date": "2026-09-01",
+            "end_date": "2026-09-30",
+        },
+    )
+
+    assert response.status_code == 200
+    body = response.json()
+    assert body["account_opening_balance"] == "0.0000"
+    assert body["activity_before_period"] == "500.0000"
+    assert body["starting_balance"] == "500.0000"
+    assert body["income"] == "1000.0000"
+    assert body["expense"] == "200.0000"
+    assert body["transfers_in"] == "25.0000"
+    assert body["transfers_out"] == "100.0000"
+    assert body["period_change"] == "725.0000"
+    assert body["closing_balance"] == "1225.0000"
+    assert [entry["balance_change"] for entry in body["entries"]] == [
+        "1000.0000",
+        "-200.0000",
+        "-100.0000",
+        "25.0000",
+    ]
+    assert [entry["running_balance"] for entry in body["entries"]] == [
+        "1500.0000",
+        "1300.0000",
+        "1200.0000",
+        "1225.0000",
+    ]
+    assert body["entries"][2]["counterparty_account_name"] == "Savings"

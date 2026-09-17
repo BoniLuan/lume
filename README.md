@@ -24,7 +24,7 @@ are part of the core design.
 - income, expenses, guided loans, card payments, transfers, editing, voiding, and retry-safe creation;
 - user-owned categories and overall/category monthly budgets;
 - recurring income/expense expectations with explicit record or skip actions;
-- dashboard totals, category ranking, six-month trend, and largest expenses;
+- dashboard totals, category ranking, six-month trend, largest expenses, and per-account balance reconciliation;
 - CSV transaction export protected against spreadsheet formula injection;
 - responsive public site and installable online-only PWA shell;
 - structured logs, request IDs, private metrics, readiness, and login throttling.

@@ -372,3 +372,27 @@ select.input { padding-right: 2rem; }
   .password-icon { display: none; }
   .password-form .field:last-of-type, .password-form .error-notice { grid-column: 1; }
 }
+
+/* Account reconciliation report */
+.report-tabs { display: flex; gap: .5rem; margin: -0.5rem 0 1rem; }
+.account-report { display: grid; grid-template-columns: minmax(240px, .65fr) minmax(420px, 1.35fr); gap: .8rem; }
+.account-report > .full-panel { grid-column: 1 / -1; }
+.balance-equation { display: grid; gap: .65rem; }
+.balance-equation > div { display: flex; justify-content: space-between; gap: 1rem; color: var(--muted); font-size: .75rem; }
+.balance-equation strong { color: var(--ink); }
+.balance-equation .equation-total { margin-top: .15rem; padding-top: .7rem; color: var(--ink); border-top: 1px solid var(--line); font-weight: 750; }
+.balance-equation .equation-total strong { color: var(--forest); font-family: Georgia, serif; font-size: 1.15rem; }
+.negative-text { color: var(--danger); }
+.ledger-scroll { overflow-x: auto; }
+.ledger-table { min-width: 680px; }
+.ledger-table > div { padding: .7rem .4rem; display: grid; grid-template-columns: 105px minmax(220px, 1fr) 120px 120px; gap: .75rem; align-items: center; border-bottom: 1px solid #ebe9e0; font-size: .75rem; }
+.ledger-table > div > div { display: grid; gap: .15rem; }
+.ledger-table small { color: var(--muted); text-transform: capitalize; }
+.ledger-table > div > span:nth-last-child(-n+2), .ledger-table > div > strong:last-child { text-align: right; }
+.ledger-table .table-head { padding-top: 0; color: var(--muted); font-size: .65rem; font-weight: 750; text-transform: uppercase; }
+
+@media (max-width: 760px) {
+  .report-tabs { display: grid; grid-template-columns: 1fr 1fr; }
+  .account-report { grid-template-columns: 1fr; }
+  .account-report > .full-panel { grid-column: 1; }
+}

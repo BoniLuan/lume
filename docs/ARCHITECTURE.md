@@ -27,7 +27,7 @@ Each module owns its models, schemas, routes, and domain services:
 - `transactions`: income, expense, transfers, retry safety, and voiding;
 - `budgets`: monthly overall and optional category limits;
 - `recurring`: templates and explicitly handled occurrences;
-- `reporting`: dashboard aggregation and CSV export;
+- `reporting`: dashboard aggregation, account balance ledgers, and CSV export;
 - `core`: configuration, database, money, time, migrations, and observability.
 
 Routes validate transport concerns. Services and database invariants own financial
@@ -51,6 +51,10 @@ Account balance is:
 ```text
 opening + income - expenses - outgoing transfers + incoming transfers
 ```
+
+The account-ledger report applies this same invariant chronologically. It exposes
+activity before the selected period, period totals, and a running balance for each
+movement so the user can reconcile Lume against an external bank or card balance.
 
 Credit cards are liability accounts. Purchases are expenses recorded on the card;
 payments are transfers from an asset account to the card, so the purchase affects

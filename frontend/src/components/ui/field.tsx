@@ -1,6 +1,8 @@
 import { clsx } from "clsx";
 import { forwardRef, type InputHTMLAttributes, type SelectHTMLAttributes } from "react";
 
+import { sanitizeMoneyInput } from "../../lib/money-input";
+
 export function Field({ label, error, children }: { label: string; error?: string; children: React.ReactNode }) {
   return (
     <label className="field">
@@ -16,6 +18,24 @@ export const Input = forwardRef<HTMLInputElement, InputHTMLAttributes<HTMLInputE
   ref,
 ) {
   return <input ref={ref} className={clsx("input", className)} {...props} />;
+});
+
+
+export const MoneyInput = forwardRef<HTMLInputElement, InputHTMLAttributes<HTMLInputElement> & { allowNegative?: boolean }>(function MoneyInput(
+  { allowNegative = false, onChange, ...props },
+  ref,
+) {
+  return <Input
+    {...props}
+    ref={ref}
+    type="text"
+    inputMode="decimal"
+    pattern={allowNegative ? "-?\\d+(?:\\.\\d{1,4})?" : "\\d+(?:\\.\\d{1,4})?"}
+    onChange={(event) => {
+      event.currentTarget.value = sanitizeMoneyInput(event.currentTarget.value, allowNegative);
+      onChange?.(event);
+    }}
+  />;
 });
 
 export const Select = forwardRef<HTMLSelectElement, SelectHTMLAttributes<HTMLSelectElement>>(function Select(

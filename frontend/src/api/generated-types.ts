@@ -335,6 +335,23 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/api/v1/reports/account-ledger": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Account Ledger */
+        get: operations["account_ledger_api_v1_reports_account_ledger_get"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/api/v1/reports/transactions.csv": {
         parameters: {
             query?: never;
@@ -485,6 +502,66 @@ export interface components {
              * @default 0.0000
              */
             opening_balance: number | string;
+        };
+        /** AccountLedgerEntry */
+        AccountLedgerEntry: {
+            /** Amount */
+            amount: string;
+            /** Balance Change */
+            balance_change: string;
+            /** Category Name */
+            category_name: string | null;
+            /** Counterparty Account Name */
+            counterparty_account_name: string | null;
+            /** Description */
+            description: string;
+            /** Direction */
+            direction: string;
+            /** Effective Date */
+            effective_date: string;
+            /** Kind */
+            kind: string;
+            /** Running Balance */
+            running_balance: string;
+            /** Transaction Id */
+            transaction_id: string;
+        };
+        /** AccountLedgerResponse */
+        AccountLedgerResponse: {
+            /** Account Class */
+            account_class: string;
+            /** Account Id */
+            account_id: string;
+            /** Account Name */
+            account_name: string;
+            /** Account Opening Balance */
+            account_opening_balance: string;
+            /** Account Type */
+            account_type: string;
+            /** Activity Before Period */
+            activity_before_period: string;
+            /** Closing Balance */
+            closing_balance: string;
+            /** Currency */
+            currency: string;
+            /** End Date */
+            end_date: string;
+            /** Entries */
+            entries: components["schemas"]["AccountLedgerEntry"][];
+            /** Expense */
+            expense: string;
+            /** Income */
+            income: string;
+            /** Period Change */
+            period_change: string;
+            /** Start Date */
+            start_date: string;
+            /** Starting Balance */
+            starting_balance: string;
+            /** Transfers In */
+            transfers_in: string;
+            /** Transfers Out */
+            transfers_out: string;
         };
         /** AccountResponse */
         AccountResponse: {
@@ -1930,6 +2007,41 @@ export interface operations {
                 };
                 content: {
                     "application/json": components["schemas"]["OccurrenceResponse"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    account_ledger_api_v1_reports_account_ledger_get: {
+        parameters: {
+            query: {
+                account_id: string;
+                start_date: string;
+                end_date: string;
+            };
+            header?: {
+                authorization?: string | null;
+            };
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["AccountLedgerResponse"];
                 };
             };
             /** @description Validation Error */

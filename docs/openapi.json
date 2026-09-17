@@ -57,6 +57,174 @@
         "title": "AccountCreate",
         "type": "object"
       },
+      "AccountLedgerEntry": {
+        "properties": {
+          "amount": {
+            "title": "Amount",
+            "type": "string"
+          },
+          "balance_change": {
+            "title": "Balance Change",
+            "type": "string"
+          },
+          "category_name": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Category Name"
+          },
+          "counterparty_account_name": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Counterparty Account Name"
+          },
+          "description": {
+            "title": "Description",
+            "type": "string"
+          },
+          "direction": {
+            "title": "Direction",
+            "type": "string"
+          },
+          "effective_date": {
+            "title": "Effective Date",
+            "type": "string"
+          },
+          "kind": {
+            "title": "Kind",
+            "type": "string"
+          },
+          "running_balance": {
+            "title": "Running Balance",
+            "type": "string"
+          },
+          "transaction_id": {
+            "title": "Transaction Id",
+            "type": "string"
+          }
+        },
+        "required": [
+          "transaction_id",
+          "effective_date",
+          "kind",
+          "description",
+          "category_name",
+          "counterparty_account_name",
+          "direction",
+          "amount",
+          "balance_change",
+          "running_balance"
+        ],
+        "title": "AccountLedgerEntry",
+        "type": "object"
+      },
+      "AccountLedgerResponse": {
+        "properties": {
+          "account_class": {
+            "title": "Account Class",
+            "type": "string"
+          },
+          "account_id": {
+            "title": "Account Id",
+            "type": "string"
+          },
+          "account_name": {
+            "title": "Account Name",
+            "type": "string"
+          },
+          "account_opening_balance": {
+            "title": "Account Opening Balance",
+            "type": "string"
+          },
+          "account_type": {
+            "title": "Account Type",
+            "type": "string"
+          },
+          "activity_before_period": {
+            "title": "Activity Before Period",
+            "type": "string"
+          },
+          "closing_balance": {
+            "title": "Closing Balance",
+            "type": "string"
+          },
+          "currency": {
+            "title": "Currency",
+            "type": "string"
+          },
+          "end_date": {
+            "title": "End Date",
+            "type": "string"
+          },
+          "entries": {
+            "items": {
+              "$ref": "#/components/schemas/AccountLedgerEntry"
+            },
+            "title": "Entries",
+            "type": "array"
+          },
+          "expense": {
+            "title": "Expense",
+            "type": "string"
+          },
+          "income": {
+            "title": "Income",
+            "type": "string"
+          },
+          "period_change": {
+            "title": "Period Change",
+            "type": "string"
+          },
+          "start_date": {
+            "title": "Start Date",
+            "type": "string"
+          },
+          "starting_balance": {
+            "title": "Starting Balance",
+            "type": "string"
+          },
+          "transfers_in": {
+            "title": "Transfers In",
+            "type": "string"
+          },
+          "transfers_out": {
+            "title": "Transfers Out",
+            "type": "string"
+          }
+        },
+        "required": [
+          "account_id",
+          "account_name",
+          "account_type",
+          "account_class",
+          "currency",
+          "start_date",
+          "end_date",
+          "account_opening_balance",
+          "activity_before_period",
+          "starting_balance",
+          "income",
+          "expense",
+          "transfers_in",
+          "transfers_out",
+          "period_change",
+          "closing_balance",
+          "entries"
+        ],
+        "title": "AccountLedgerResponse",
+        "type": "object"
+      },
       "AccountResponse": {
         "properties": {
           "account_class": {
@@ -3538,6 +3706,84 @@
         "summary": "Skip Occurrence",
         "tags": [
           "recurring"
+        ]
+      }
+    },
+    "/api/v1/reports/account-ledger": {
+      "get": {
+        "operationId": "account_ledger_api_v1_reports_account_ledger_get",
+        "parameters": [
+          {
+            "in": "query",
+            "name": "account_id",
+            "required": true,
+            "schema": {
+              "title": "Account Id",
+              "type": "string"
+            }
+          },
+          {
+            "in": "query",
+            "name": "start_date",
+            "required": true,
+            "schema": {
+              "format": "date",
+              "title": "Start Date",
+              "type": "string"
+            }
+          },
+          {
+            "in": "query",
+            "name": "end_date",
+            "required": true,
+            "schema": {
+              "format": "date",
+              "title": "End Date",
+              "type": "string"
+            }
+          },
+          {
+            "in": "header",
+            "name": "authorization",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "Authorization"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/AccountLedgerResponse"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "summary": "Account Ledger",
+        "tags": [
+          "reporting"
         ]
       }
     },
