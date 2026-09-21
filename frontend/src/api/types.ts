@@ -15,3 +15,7 @@ export type Transaction = components["schemas"]["TransactionResponse"];
 export type TransactionCreate = components["schemas"]["TransactionCreate"];
 export type TransactionPage = components["schemas"]["TransactionPage"];
 export type User = components["schemas"]["UserResponse"];
+
+export type StatementPreview = components["schemas"]["StatementPreviewResponse"];
+export type StatementDecision = components["schemas"]["StatementDecision"];
+export type StatementCommit = components["schemas"]["StatementCommitResponse"];

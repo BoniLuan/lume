@@ -7,6 +7,11 @@ export function sanitizeMoneyInput(raw: string, allowNegative = false): string {
   const fraction = decimalIndex === undefined ? "" : filtered.slice(decimalIndex + 1);
   whole = whole.replace(/[.,]/g, "").replace(/^0+(?=\d)/, "");
   const digits = whole || (decimalIndex === undefined ? "" : "0");
-  const value = decimalIndex === undefined ? digits : `${digits}.${fraction.replace(/[.,]/g, "").slice(0, 4)}`;
+  const value = decimalIndex === undefined ? digits : `${digits}.${fraction.replace(/[.,]/g, "").slice(0, 2)}`;
   return negative ? `-${value}` : value;
+}
+
+export function moneyForInput(value: string | number): string {
+  const amount = Number(value);
+  return Number.isFinite(amount) ? amount.toFixed(2) : "";
 }

@@ -1,10 +1,15 @@
 import { describe, expect, it } from "vitest";
 
-import { sanitizeMoneyInput } from "./money-input";
+import { moneyForInput, sanitizeMoneyInput } from "./money-input";
 
 describe("sanitizeMoneyInput", () => {
   it("removes letters and limits decimal precision", () => {
-    expect(sanitizeMoneyInput("R$ 47abc,90123")).toBe("47.9012");
+    expect(sanitizeMoneyInput("R$ 47abc,90123")).toBe("47.90");
+  });
+
+  it("displays stored four-place amounts with two places", () => {
+    expect(moneyForInput("47.9000")).toBe("47.90");
+    expect(moneyForInput("0.0000")).toBe("0.00");
   });
 
   it("normalizes pasted grouping and decimal separators", () => {

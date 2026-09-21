@@ -11,13 +11,14 @@ import type { Account, Category, Transaction, TransactionCreate } from "../../ap
 import { Button } from "../../components/ui/button";
 import { Field, Input, MoneyInput, Select } from "../../components/ui/field";
 import { ErrorNotice } from "../../components/ui/states";
+import { moneyForInput } from "../../lib/money-input";
 import { todayInSaoPaulo } from "../../lib/dates";
 
 type EntryMode = "expense" | "income" | "transfer" | "loan_out" | "loan_repayment" | "credit_payment";
 
 const schema = z
   .object({
-    amount: z.string().regex(/^\d+(?:[.,]\d{1,4})?$/, "Enter a valid amount"),
+    amount: z.string().regex(/^\d+(?:[.,]\d{1,2})?$/, "Enter a valid amount"),
     mode: z.enum(["expense", "income", "transfer", "loan_out", "loan_repayment", "credit_payment"]),
     description: z.string().trim().min(1, "Description is required").max(160),
     account_id: z.string().min(1, "Choose an account"),
@@ -46,7 +47,7 @@ function transactionMode(item?: Transaction | null): EntryMode {
 
 function defaults(item?: Transaction | null): Values {
   return {
-    amount: item?.amount ?? "",
+    amount: item ? moneyForInput(item.amount) : "",
     mode: transactionMode(item),
     description: item?.description ?? "",
     account_id: item?.account_id ?? "",

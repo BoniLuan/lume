@@ -25,6 +25,7 @@ are part of the core design.
 - user-owned categories and overall/category monthly budgets;
 - recurring income/expense expectations with explicit record or skip actions;
 - dashboard totals, category ranking, six-month trend, largest expenses, and per-account balance reconciliation;
+- reviewed CSV/OFX transaction imports with duplicate checks and remembered category suggestions;
 - CSV transaction export protected against spreadsheet formula injection;
 - responsive public site and installable online-only PWA shell;
 - structured logs, request IDs, private metrics, readiness, and login throttling.
@@ -68,7 +69,8 @@ the Nginx gateway, FastAPI API, and dedicated MariaDB database. Only the gateway
 joins the VPS `web-proxy` network; the API joins the private application networks
 and the existing private monitoring network.
 
-Read [Architecture](docs/ARCHITECTURE.md), [Deployment](docs/DEPLOYMENT.md), and
+Read [Architecture](docs/ARCHITECTURE.md), [Statement imports](docs/IMPORTS.md),
+[Deployment](docs/DEPLOYMENT.md), and
 [Backup and restore](docs/BACKUP_RESTORE.md) for operational detail. The original
 [implementation plan](docs/IMPLEMENTATION_PLAN.md) records the scope and decisions
 that guided v1.

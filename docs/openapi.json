@@ -1337,6 +1337,262 @@
         "title": "SessionResponse",
         "type": "object"
       },
+      "StatementCommitRequest": {
+        "properties": {
+          "account_id": {
+            "title": "Account Id",
+            "type": "string"
+          },
+          "content": {
+            "maxLength": 1000000,
+            "title": "Content",
+            "type": "string"
+          },
+          "decisions": {
+            "items": {
+              "$ref": "#/components/schemas/StatementDecision"
+            },
+            "maxItems": 500,
+            "title": "Decisions",
+            "type": "array"
+          },
+          "filename": {
+            "maxLength": 150,
+            "title": "Filename",
+            "type": "string"
+          }
+        },
+        "required": [
+          "account_id",
+          "filename",
+          "content",
+          "decisions"
+        ],
+        "title": "StatementCommitRequest",
+        "type": "object"
+      },
+      "StatementCommitResponse": {
+        "properties": {
+          "created": {
+            "title": "Created",
+            "type": "integer"
+          },
+          "matched": {
+            "title": "Matched",
+            "type": "integer"
+          },
+          "skipped": {
+            "title": "Skipped",
+            "type": "integer"
+          }
+        },
+        "required": [
+          "created",
+          "skipped",
+          "matched"
+        ],
+        "title": "StatementCommitResponse",
+        "type": "object"
+      },
+      "StatementDecision": {
+        "properties": {
+          "action": {
+            "enum": [
+              "skip",
+              "create"
+            ],
+            "title": "Action",
+            "type": "string"
+          },
+          "allow_possible_match": {
+            "default": false,
+            "title": "Allow Possible Match",
+            "type": "boolean"
+          },
+          "category_id": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Category Id"
+          },
+          "counterparty_account_id": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Counterparty Account Id"
+          },
+          "kind": {
+            "anyOf": [
+              {
+                "enum": [
+                  "income",
+                  "expense",
+                  "transfer"
+                ],
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Kind"
+          },
+          "remember_category": {
+            "default": false,
+            "title": "Remember Category",
+            "type": "boolean"
+          },
+          "row_key": {
+            "title": "Row Key",
+            "type": "string"
+          }
+        },
+        "required": [
+          "row_key",
+          "action"
+        ],
+        "title": "StatementDecision",
+        "type": "object"
+      },
+      "StatementPreviewRequest": {
+        "properties": {
+          "account_id": {
+            "title": "Account Id",
+            "type": "string"
+          },
+          "content": {
+            "maxLength": 1000000,
+            "title": "Content",
+            "type": "string"
+          },
+          "filename": {
+            "maxLength": 150,
+            "title": "Filename",
+            "type": "string"
+          }
+        },
+        "required": [
+          "account_id",
+          "filename",
+          "content"
+        ],
+        "title": "StatementPreviewRequest",
+        "type": "object"
+      },
+      "StatementPreviewResponse": {
+        "properties": {
+          "account_id": {
+            "title": "Account Id",
+            "type": "string"
+          },
+          "format": {
+            "enum": [
+              "csv",
+              "ofx"
+            ],
+            "title": "Format",
+            "type": "string"
+          },
+          "rows": {
+            "items": {
+              "$ref": "#/components/schemas/StatementRow"
+            },
+            "title": "Rows",
+            "type": "array"
+          }
+        },
+        "required": [
+          "rows",
+          "format",
+          "account_id"
+        ],
+        "title": "StatementPreviewResponse",
+        "type": "object"
+      },
+      "StatementRow": {
+        "properties": {
+          "amount": {
+            "title": "Amount",
+            "type": "string"
+          },
+          "description": {
+            "title": "Description",
+            "type": "string"
+          },
+          "effective_date": {
+            "format": "date",
+            "title": "Effective Date",
+            "type": "string"
+          },
+          "kind": {
+            "enum": [
+              "income",
+              "expense"
+            ],
+            "title": "Kind",
+            "type": "string"
+          },
+          "matched_transaction_id": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Matched Transaction Id"
+          },
+          "row_key": {
+            "title": "Row Key",
+            "type": "string"
+          },
+          "source_id": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Source Id"
+          },
+          "suggested_category_id": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Suggested Category Id"
+          }
+        },
+        "required": [
+          "row_key",
+          "effective_date",
+          "description",
+          "kind",
+          "amount",
+          "source_id",
+          "matched_transaction_id",
+          "suggested_category_id"
+        ],
+        "title": "StatementRow",
+        "type": "object"
+      },
       "TransactionCreate": {
         "properties": {
           "account_id": {
@@ -3254,6 +3510,156 @@
         "summary": "Dashboard",
         "tags": [
           "reporting"
+        ]
+      }
+    },
+    "/api/v1/imports/commit": {
+      "post": {
+        "operationId": "commit_statement_api_v1_imports_commit_post",
+        "parameters": [
+          {
+            "in": "header",
+            "name": "X-CSRF-Token",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "X-Csrf-Token"
+            }
+          },
+          {
+            "in": "header",
+            "name": "authorization",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "Authorization"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/StatementCommitRequest"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "201": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/StatementCommitResponse"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "summary": "Commit Statement",
+        "tags": [
+          "imports"
+        ]
+      }
+    },
+    "/api/v1/imports/preview": {
+      "post": {
+        "operationId": "preview_statement_api_v1_imports_preview_post",
+        "parameters": [
+          {
+            "in": "header",
+            "name": "X-CSRF-Token",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "X-Csrf-Token"
+            }
+          },
+          {
+            "in": "header",
+            "name": "authorization",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "Authorization"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/StatementPreviewRequest"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/StatementPreviewResponse"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "summary": "Preview Statement",
+        "tags": [
+          "imports"
         ]
       }
     },

@@ -30,7 +30,7 @@ export const MoneyInput = forwardRef<HTMLInputElement, InputHTMLAttributes<HTMLI
     ref={ref}
     type="text"
     inputMode="decimal"
-    pattern={allowNegative ? "-?\\d+(?:\\.\\d{1,4})?" : "\\d+(?:\\.\\d{1,4})?"}
+    pattern={allowNegative ? "-?\\d+(?:\\.\\d{1,2})?" : "\\d+(?:\\.\\d{1,2})?"}
     onChange={(event) => {
       event.currentTarget.value = sanitizeMoneyInput(event.currentTarget.value, allowNegative);
       onChange?.(event);

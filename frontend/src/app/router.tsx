@@ -15,6 +15,7 @@ export const router = createBrowserRouter([
       { index: true, lazy: async () => ({ Component: (await import("../routes/dashboard")).DashboardRoute }) },
       { path: "transactions", lazy: async () => ({ Component: (await import("../routes/transactions")).TransactionsRoute }) },
       { path: "transactions/new", lazy: async () => ({ Component: (await import("../routes/transactions")).TransactionsRoute }) },
+      { path: "imports", lazy: async () => ({ Component: (await import("../routes/import-statements")).ImportStatementsRoute }) },
       { path: "accounts", lazy: async () => ({ Component: (await import("../routes/accounts")).AccountsRoute }) },
       { path: "categories", lazy: async () => ({ Component: (await import("../routes/categories")).CategoriesRoute }) },
       { path: "budgets", lazy: async () => ({ Component: (await import("../routes/budgets")).BudgetsRoute }) },

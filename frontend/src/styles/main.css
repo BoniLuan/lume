@@ -396,3 +396,21 @@ select.input { padding-right: 2rem; }
   .account-report { grid-template-columns: 1fr; }
   .account-report > .full-panel { grid-column: 1; }
 }
+
+/* Reviewed statement imports */
+.import-source { display: grid; grid-template-columns: repeat(2, minmax(180px, 1fr)); gap: .8rem; }
+.import-source > p { grid-column: 1 / -1; font-size: .75rem; }
+.import-review { margin-top: 1rem; }
+.import-review > .button { margin-top: 1rem; }
+.import-rows { margin-top: 1rem; display: grid; gap: .65rem; }
+.import-rows article { padding: .85rem; border: 1px solid var(--line); border-radius: 10px; }
+.import-rows article.possible-match { background: #f6f3ea; }
+.import-row-summary { display: flex; justify-content: space-between; gap: 1rem; font-size: .78rem; }
+.import-row-summary span { color: var(--muted); white-space: nowrap; }
+.import-row-controls { margin-top: .75rem; display: grid; grid-template-columns: repeat(3, minmax(110px, 1fr)) auto; align-items: end; gap: .6rem; }
+.import-row-controls .checkbox-row { grid-column: auto; min-height: 40px; }
+@media (max-width: 760px) {
+  .import-source, .import-row-controls { grid-template-columns: 1fr; }
+  .import-row-summary { flex-direction: column; gap: .2rem; }
+  .page-header .row-actions { width: 100%; }
+}

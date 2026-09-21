@@ -249,6 +249,40 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/api/v1/imports/commit": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** Commit Statement */
+        post: operations["commit_statement_api_v1_imports_commit_post"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/imports/preview": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** Preview Statement */
+        post: operations["preview_statement_api_v1_imports_preview_post"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/api/v1/recurring-templates": {
         parameters: {
             query?: never;
@@ -944,6 +978,98 @@ export interface components {
              */
             transport: "cookie" | "bearer";
             user: components["schemas"]["UserResponse"];
+        };
+        /** StatementCommitRequest */
+        StatementCommitRequest: {
+            /** Account Id */
+            account_id: string;
+            /** Content */
+            content: string;
+            /** Decisions */
+            decisions: components["schemas"]["StatementDecision"][];
+            /** Filename */
+            filename: string;
+        };
+        /** StatementCommitResponse */
+        StatementCommitResponse: {
+            /** Created */
+            created: number;
+            /** Matched */
+            matched: number;
+            /** Skipped */
+            skipped: number;
+        };
+        /** StatementDecision */
+        StatementDecision: {
+            /**
+             * Action
+             * @enum {string}
+             */
+            action: "skip" | "create";
+            /**
+             * Allow Possible Match
+             * @default false
+             */
+            allow_possible_match: boolean;
+            /** Category Id */
+            category_id?: string | null;
+            /** Counterparty Account Id */
+            counterparty_account_id?: string | null;
+            /** Kind */
+            kind?: ("income" | "expense" | "transfer") | null;
+            /**
+             * Remember Category
+             * @default false
+             */
+            remember_category: boolean;
+            /** Row Key */
+            row_key: string;
+        };
+        /** StatementPreviewRequest */
+        StatementPreviewRequest: {
+            /** Account Id */
+            account_id: string;
+            /** Content */
+            content: string;
+            /** Filename */
+            filename: string;
+        };
+        /** StatementPreviewResponse */
+        StatementPreviewResponse: {
+            /** Account Id */
+            account_id: string;
+            /**
+             * Format
+             * @enum {string}
+             */
+            format: "csv" | "ofx";
+            /** Rows */
+            rows: components["schemas"]["StatementRow"][];
+        };
+        /** StatementRow */
+        StatementRow: {
+            /** Amount */
+            amount: string;
+            /** Description */
+            description: string;
+            /**
+             * Effective Date
+             * Format: date
+             */
+            effective_date: string;
+            /**
+             * Kind
+             * @enum {string}
+             */
+            kind: "income" | "expense";
+            /** Matched Transaction Id */
+            matched_transaction_id: string | null;
+            /** Row Key */
+            row_key: string;
+            /** Source Id */
+            source_id: string | null;
+            /** Suggested Category Id */
+            suggested_category_id: string | null;
         };
         /** TransactionCreate */
         TransactionCreate: {
@@ -1795,6 +1921,78 @@ export interface operations {
                 };
                 content: {
                     "application/json": components["schemas"]["DashboardResponse"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    commit_statement_api_v1_imports_commit_post: {
+        parameters: {
+            query?: never;
+            header?: {
+                "X-CSRF-Token"?: string | null;
+                authorization?: string | null;
+            };
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["StatementCommitRequest"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            201: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["StatementCommitResponse"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    preview_statement_api_v1_imports_preview_post: {
+        parameters: {
+            query?: never;
+            header?: {
+                "X-CSRF-Token"?: string | null;
+                authorization?: string | null;
+            };
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["StatementPreviewRequest"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["StatementPreviewResponse"];
                 };
             };
             /** @description Validation Error */

@@ -15,6 +15,7 @@ from lume.core.config import get_settings
 from lume.core.database import SessionFactory
 from lume.core.migrations import expected_revision
 from lume.core.observability import configure_logging, install_observability, metrics_response
+from lume.imports.api import router as imports_router
 from lume.recurring.api import router as recurring_router
 from lume.reporting.api import router as reporting_router
 from lume.transactions.api import router as transactions_router
@@ -56,6 +57,7 @@ app.include_router(transactions_router)
 app.include_router(budgets_router)
 app.include_router(recurring_router)
 app.include_router(reporting_router)
+app.include_router(imports_router)
 
 
 @app.get("/healthz", include_in_schema=False)
