@@ -414,3 +414,22 @@ select.input { padding-right: 2rem; }
   .import-row-summary { flex-direction: column; gap: .2rem; }
   .page-header .row-actions { width: 100%; }
 }
+
+/* Balance comparison and spending detail */
+.reconcile-form { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); align-items: end; gap: .8rem; }
+.reconcile-form > .button { width: 100%; }
+.reconcile-result { display: grid; gap: .65rem; margin-top: 1rem; padding-top: 1rem; border-top: 1px solid var(--line); }
+.reconcile-result > div { display: flex; justify-content: space-between; gap: 1rem; font-size: .82rem; }
+.reconcile-result > div > span { color: var(--muted); }
+.reconcile-result .equation-total { padding-top: .7rem; border-top: 1px solid var(--line); font-weight: 750; }
+.reconcile-result .panel-note { margin: .4rem 0 0; }
+.spending-category-table { overflow-x: auto; }
+.spending-category-table > div { min-width: 530px; grid-template-columns: 1fr repeat(3, minmax(90px, .55fr)); }
+@media (max-width: 760px) {
+  .report-tabs { grid-template-columns: 1fr; }
+  .reconcile-form { grid-template-columns: 1fr; }
+}
+.reconcile-details { margin-top: .3rem; padding: .75rem; border: 1px solid var(--line); border-radius: 10px; }
+.reconcile-details summary { color: var(--forest); font-size: .78rem; font-weight: 750; cursor: pointer; }
+.reconcile-details .balance-equation { margin: .8rem 0; }
+.reconcile-details small { color: var(--muted); }

@@ -24,7 +24,8 @@ are part of the core design.
 - income, expenses, guided loans, card payments, transfers, editing, voiding, and retry-safe creation;
 - user-owned categories and overall/category monthly budgets;
 - recurring income/expense expectations with explicit record or skip actions;
-- dashboard totals, category ranking, six-month trend, largest expenses, and per-account balance reconciliation;
+- dashboard totals, category ranking, six-month trend, largest expenses, and date-based account balance reconciliation;
+- monthly spending insights by account and category;
 - reviewed CSV/OFX transaction imports with duplicate checks and remembered category suggestions;
 - CSV transaction export protected against spreadsheet formula injection;
 - responsive public site and installable online-only PWA shell;
@@ -70,7 +71,7 @@ joins the VPS `web-proxy` network; the API joins the private application network
 and the existing private monitoring network.
 
 Read [Architecture](docs/ARCHITECTURE.md), [Statement imports](docs/IMPORTS.md),
-[Deployment](docs/DEPLOYMENT.md), and
+[Reconciliation](docs/RECONCILIATION.md), [Deployment](docs/DEPLOYMENT.md), and
 [Backup and restore](docs/BACKUP_RESTORE.md) for operational detail. The original
 [implementation plan](docs/IMPLEMENTATION_PLAN.md) records the scope and decisions
 that guided v1.

@@ -386,6 +386,40 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/api/v1/reports/account-reconciliation": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** Account Reconciliation */
+        post: operations["account_reconciliation_api_v1_reports_account_reconciliation_post"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/reports/spending-insights": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Spending Insights */
+        get: operations["spending_insights_api_v1_reports_spending_insights_get"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/api/v1/reports/transactions.csv": {
         parameters: {
             query?: never;
@@ -592,6 +626,49 @@ export interface components {
             start_date: string;
             /** Starting Balance */
             starting_balance: string;
+            /** Transfers In */
+            transfers_in: string;
+            /** Transfers Out */
+            transfers_out: string;
+        };
+        /** AccountReconciliationRequest */
+        AccountReconciliationRequest: {
+            /** Account Id */
+            account_id: string;
+            /** Actual Balance */
+            actual_balance: number | string;
+            /**
+             * As Of Date
+             * Format: date
+             */
+            as_of_date: string;
+        };
+        /** AccountReconciliationResponse */
+        AccountReconciliationResponse: {
+            /** Account Class */
+            account_class: string;
+            /** Account Id */
+            account_id: string;
+            /** Account Name */
+            account_name: string;
+            /** Actual Balance */
+            actual_balance: string;
+            /** As Of Date */
+            as_of_date: string;
+            /** Calculated Balance */
+            calculated_balance: string;
+            /** Currency */
+            currency: string;
+            /** Difference */
+            difference: string;
+            /** Expense */
+            expense: string;
+            /** Income */
+            income: string;
+            /** Movement Count */
+            movement_count: number;
+            /** Opening Balance */
+            opening_balance: string;
             /** Transfers In */
             transfers_in: string;
             /** Transfers Out */
@@ -978,6 +1055,47 @@ export interface components {
              */
             transport: "cookie" | "bearer";
             user: components["schemas"]["UserResponse"];
+        };
+        /** SpendingAccountRow */
+        SpendingAccountRow: {
+            /** Account Id */
+            account_id: string;
+            /** Account Name */
+            account_name: string;
+            /** Amount */
+            amount: string;
+            /** Count */
+            count: number;
+        };
+        /** SpendingCategoryRow */
+        SpendingCategoryRow: {
+            /** Amount */
+            amount: string;
+            /** Category Id */
+            category_id: string;
+            /** Category Name */
+            category_name: string;
+            /** Change */
+            change: string;
+            /** Previous Amount */
+            previous_amount: string;
+        };
+        /** SpendingInsightsResponse */
+        SpendingInsightsResponse: {
+            /** Accounts */
+            accounts: components["schemas"]["SpendingAccountRow"][];
+            /** Categories */
+            categories: components["schemas"]["SpendingCategoryRow"][];
+            /** Change */
+            change: string;
+            /** Currency */
+            currency: string;
+            /** Expense */
+            expense: string;
+            /** Month */
+            month: string;
+            /** Previous Expense */
+            previous_expense: string;
         };
         /** StatementCommitRequest */
         StatementCommitRequest: {
@@ -2240,6 +2358,75 @@ export interface operations {
                 };
                 content: {
                     "application/json": components["schemas"]["AccountLedgerResponse"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    account_reconciliation_api_v1_reports_account_reconciliation_post: {
+        parameters: {
+            query?: never;
+            header?: {
+                "X-CSRF-Token"?: string | null;
+                authorization?: string | null;
+            };
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["AccountReconciliationRequest"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["AccountReconciliationResponse"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    spending_insights_api_v1_reports_spending_insights_get: {
+        parameters: {
+            query: {
+                month: string;
+            };
+            header?: {
+                authorization?: string | null;
+            };
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["SpendingInsightsResponse"];
                 };
             };
             /** @description Validation Error */

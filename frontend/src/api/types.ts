@@ -2,6 +2,8 @@ import type { components } from "./generated-types";
 
 export type Account = components["schemas"]["AccountResponse"];
 export type AccountLedger = components["schemas"]["AccountLedgerResponse"];
+export type AccountReconciliation = components["schemas"]["AccountReconciliationResponse"];
+export type SpendingInsights = components["schemas"]["SpendingInsightsResponse"];
 export type AccountCreate = components["schemas"]["AccountCreate"];
 export type Budget = components["schemas"]["BudgetResponse"];
 export type Category = components["schemas"]["CategoryResponse"];

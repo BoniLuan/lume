@@ -6,11 +6,11 @@ from typing import Annotated
 from zoneinfo import ZoneInfo
 
 from fastapi import APIRouter, Depends, HTTPException, Query, Response
-from sqlalchemy import func, or_, select
+from sqlalchemy import case, func, or_, select
 from sqlalchemy.orm import Session
 
 from lume.accounts.models import Account
-from lume.auth.dependencies import CurrentAuth
+from lume.auth.dependencies import CsrfAuth, CurrentAuth
 from lume.budgets.models import BudgetPeriod
 from lume.budgets.service import budget_response, next_month, parse_month
 from lume.categories.models import Category
@@ -20,9 +20,14 @@ from lume.recurring.schemas import RecurringResponse
 from lume.reporting.schemas import (
     AccountLedgerEntry,
     AccountLedgerResponse,
+    AccountReconciliationRequest,
+    AccountReconciliationResponse,
     CategorySpending,
     DashboardResponse,
     MonthlyTrendPoint,
+    SpendingAccountRow,
+    SpendingCategoryRow,
+    SpendingInsightsResponse,
 )
 from lume.transactions.models import Transaction
 from lume.transactions.schemas import TransactionResponse
@@ -300,6 +305,143 @@ def account_ledger(
         period_change=period_change,
         closing_balance=running,
         entries=entries,
+    )
+
+
+@router.post("/reports/account-reconciliation", response_model=AccountReconciliationResponse)
+def account_reconciliation(
+    payload: AccountReconciliationRequest,
+    auth: CsrfAuth,
+    db: Annotated[Session, Depends(get_db)],
+) -> AccountReconciliationResponse:
+    account = db.scalar(
+        select(Account).where(Account.id == payload.account_id, Account.user_id == auth.user.id)
+    )
+    if account is None:
+        raise HTTPException(status_code=404, detail="Account not found")
+    if payload.as_of_date < account.opened_on:
+        raise HTTPException(status_code=422, detail="Date cannot precede account opening")
+    if payload.as_of_date > datetime.now(ZoneInfo(auth.user.timezone)).date():
+        raise HTTPException(status_code=422, detail="Date cannot be in the future")
+    is_source = Transaction.account_id == account.id
+    is_destination = Transaction.destination_account_id == account.id
+    amount = Transaction.amount
+    zero = Decimal("0.0000")
+    totals = db.execute(
+        select(
+            func.coalesce(
+                func.sum(case((is_source & (Transaction.kind == "income"), amount), else_=zero)),
+                zero,
+            ),
+            func.coalesce(
+                func.sum(case((is_source & (Transaction.kind == "expense"), amount), else_=zero)),
+                zero,
+            ),
+            func.coalesce(
+                func.sum(
+                    case((is_destination & (Transaction.kind == "transfer"), amount), else_=zero)
+                ),
+                zero,
+            ),
+            func.coalesce(
+                func.sum(case((is_source & (Transaction.kind == "transfer"), amount), else_=zero)),
+                zero,
+            ),
+            func.count(Transaction.id),
+        ).where(
+            Transaction.user_id == auth.user.id,
+            Transaction.voided_at.is_(None),
+            Transaction.effective_date <= payload.as_of_date,
+            or_(is_source, is_destination),
+        )
+    ).one()
+    income, expense, transfers_in, transfers_out = (Decimal(value) for value in totals[:4])
+    calculated = account.opening_balance + income + transfers_in - expense - transfers_out
+    return AccountReconciliationResponse(
+        account_id=account.id,
+        account_name=account.name,
+        account_class=account.account_class,
+        currency=account.currency,
+        as_of_date=payload.as_of_date.isoformat(),
+        opening_balance=account.opening_balance,
+        income=income,
+        expense=expense,
+        transfers_in=transfers_in,
+        transfers_out=transfers_out,
+        calculated_balance=calculated,
+        actual_balance=payload.actual_balance,
+        difference=payload.actual_balance - calculated,
+        movement_count=int(totals[4]),
+    )
+
+
+@router.get("/reports/spending-insights", response_model=SpendingInsightsResponse)
+def spending_insights(
+    auth: CurrentAuth,
+    db: Annotated[Session, Depends(get_db)],
+    month: Annotated[str, Query(pattern=r"^\d{4}-\d{2}$")],
+) -> SpendingInsightsResponse:
+    try:
+        month_start = parse_month(month)
+    except ValueError as error:
+        raise HTTPException(status_code=422, detail=str(error)) from error
+    previous_start = _shift_month(month_start, -1)
+    month_end = next_month(month_start)
+    amount = Transaction.amount
+    current_amount = func.sum(case((Transaction.effective_date >= month_start, amount), else_=0))
+    previous_amount = func.sum(case((Transaction.effective_date < month_start, amount), else_=0))
+    common = (
+        Transaction.user_id == auth.user.id,
+        Transaction.kind == "expense",
+        Transaction.voided_at.is_(None),
+        Transaction.effective_date >= previous_start,
+        Transaction.effective_date < month_end,
+    )
+    category_rows = db.execute(
+        select(Category.id, Category.name, current_amount, previous_amount)
+        .join(Transaction, Transaction.category_id == Category.id)
+        .where(*common)
+        .group_by(Category.id, Category.name)
+        .order_by(current_amount.desc(), previous_amount.desc(), Category.name)
+    ).all()
+    account_rows = db.execute(
+        select(Account.id, Account.name, func.sum(amount), func.count(Transaction.id))
+        .join(Transaction, Transaction.account_id == Account.id)
+        .where(
+            Transaction.user_id == auth.user.id,
+            Transaction.kind == "expense",
+            Transaction.voided_at.is_(None),
+            Transaction.effective_date >= month_start,
+            Transaction.effective_date < month_end,
+        )
+        .group_by(Account.id, Account.name)
+        .order_by(func.sum(amount).desc(), Account.name)
+    ).all()
+    categories = [
+        SpendingCategoryRow(
+            category_id=category_id,
+            category_name=name,
+            amount=Decimal(current),
+            previous_amount=Decimal(previous),
+            change=Decimal(current) - Decimal(previous),
+        )
+        for category_id, name, current, previous in category_rows
+    ]
+    expense = sum((row.amount for row in categories), Decimal("0.0000"))
+    previous_expense = sum((row.previous_amount for row in categories), Decimal("0.0000"))
+    return SpendingInsightsResponse(
+        month=month,
+        currency=auth.user.base_currency,
+        expense=expense,
+        previous_expense=previous_expense,
+        change=expense - previous_expense,
+        accounts=[
+            SpendingAccountRow(
+                account_id=account_id, account_name=name, amount=Decimal(total), count=int(count)
+            )
+            for account_id, name, total, count in account_rows
+        ],
+        categories=categories,
     )
 
 

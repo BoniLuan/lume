@@ -225,6 +225,116 @@
         "title": "AccountLedgerResponse",
         "type": "object"
       },
+      "AccountReconciliationRequest": {
+        "properties": {
+          "account_id": {
+            "title": "Account Id",
+            "type": "string"
+          },
+          "actual_balance": {
+            "anyOf": [
+              {
+                "type": "number"
+              },
+              {
+                "pattern": "^(?!^[-+.]*$)[+-]?0*\\d*\\.?\\d*$",
+                "type": "string"
+              }
+            ],
+            "title": "Actual Balance"
+          },
+          "as_of_date": {
+            "format": "date",
+            "title": "As Of Date",
+            "type": "string"
+          }
+        },
+        "required": [
+          "account_id",
+          "as_of_date",
+          "actual_balance"
+        ],
+        "title": "AccountReconciliationRequest",
+        "type": "object"
+      },
+      "AccountReconciliationResponse": {
+        "properties": {
+          "account_class": {
+            "title": "Account Class",
+            "type": "string"
+          },
+          "account_id": {
+            "title": "Account Id",
+            "type": "string"
+          },
+          "account_name": {
+            "title": "Account Name",
+            "type": "string"
+          },
+          "actual_balance": {
+            "title": "Actual Balance",
+            "type": "string"
+          },
+          "as_of_date": {
+            "title": "As Of Date",
+            "type": "string"
+          },
+          "calculated_balance": {
+            "title": "Calculated Balance",
+            "type": "string"
+          },
+          "currency": {
+            "title": "Currency",
+            "type": "string"
+          },
+          "difference": {
+            "title": "Difference",
+            "type": "string"
+          },
+          "expense": {
+            "title": "Expense",
+            "type": "string"
+          },
+          "income": {
+            "title": "Income",
+            "type": "string"
+          },
+          "movement_count": {
+            "title": "Movement Count",
+            "type": "integer"
+          },
+          "opening_balance": {
+            "title": "Opening Balance",
+            "type": "string"
+          },
+          "transfers_in": {
+            "title": "Transfers In",
+            "type": "string"
+          },
+          "transfers_out": {
+            "title": "Transfers Out",
+            "type": "string"
+          }
+        },
+        "required": [
+          "account_id",
+          "account_name",
+          "account_class",
+          "currency",
+          "as_of_date",
+          "opening_balance",
+          "income",
+          "expense",
+          "transfers_in",
+          "transfers_out",
+          "calculated_balance",
+          "actual_balance",
+          "difference",
+          "movement_count"
+        ],
+        "title": "AccountReconciliationResponse",
+        "type": "object"
+      },
       "AccountResponse": {
         "properties": {
           "account_class": {
@@ -1335,6 +1445,116 @@
           "expires_at"
         ],
         "title": "SessionResponse",
+        "type": "object"
+      },
+      "SpendingAccountRow": {
+        "properties": {
+          "account_id": {
+            "title": "Account Id",
+            "type": "string"
+          },
+          "account_name": {
+            "title": "Account Name",
+            "type": "string"
+          },
+          "amount": {
+            "title": "Amount",
+            "type": "string"
+          },
+          "count": {
+            "title": "Count",
+            "type": "integer"
+          }
+        },
+        "required": [
+          "account_id",
+          "account_name",
+          "amount",
+          "count"
+        ],
+        "title": "SpendingAccountRow",
+        "type": "object"
+      },
+      "SpendingCategoryRow": {
+        "properties": {
+          "amount": {
+            "title": "Amount",
+            "type": "string"
+          },
+          "category_id": {
+            "title": "Category Id",
+            "type": "string"
+          },
+          "category_name": {
+            "title": "Category Name",
+            "type": "string"
+          },
+          "change": {
+            "title": "Change",
+            "type": "string"
+          },
+          "previous_amount": {
+            "title": "Previous Amount",
+            "type": "string"
+          }
+        },
+        "required": [
+          "category_id",
+          "category_name",
+          "amount",
+          "previous_amount",
+          "change"
+        ],
+        "title": "SpendingCategoryRow",
+        "type": "object"
+      },
+      "SpendingInsightsResponse": {
+        "properties": {
+          "accounts": {
+            "items": {
+              "$ref": "#/components/schemas/SpendingAccountRow"
+            },
+            "title": "Accounts",
+            "type": "array"
+          },
+          "categories": {
+            "items": {
+              "$ref": "#/components/schemas/SpendingCategoryRow"
+            },
+            "title": "Categories",
+            "type": "array"
+          },
+          "change": {
+            "title": "Change",
+            "type": "string"
+          },
+          "currency": {
+            "title": "Currency",
+            "type": "string"
+          },
+          "expense": {
+            "title": "Expense",
+            "type": "string"
+          },
+          "month": {
+            "title": "Month",
+            "type": "string"
+          },
+          "previous_expense": {
+            "title": "Previous Expense",
+            "type": "string"
+          }
+        },
+        "required": [
+          "month",
+          "currency",
+          "expense",
+          "previous_expense",
+          "change",
+          "accounts",
+          "categories"
+        ],
+        "title": "SpendingInsightsResponse",
         "type": "object"
       },
       "StatementCommitRequest": {
@@ -4188,6 +4408,140 @@
           }
         },
         "summary": "Account Ledger",
+        "tags": [
+          "reporting"
+        ]
+      }
+    },
+    "/api/v1/reports/account-reconciliation": {
+      "post": {
+        "operationId": "account_reconciliation_api_v1_reports_account_reconciliation_post",
+        "parameters": [
+          {
+            "in": "header",
+            "name": "X-CSRF-Token",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "X-Csrf-Token"
+            }
+          },
+          {
+            "in": "header",
+            "name": "authorization",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "Authorization"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/AccountReconciliationRequest"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/AccountReconciliationResponse"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "summary": "Account Reconciliation",
+        "tags": [
+          "reporting"
+        ]
+      }
+    },
+    "/api/v1/reports/spending-insights": {
+      "get": {
+        "operationId": "spending_insights_api_v1_reports_spending_insights_get",
+        "parameters": [
+          {
+            "in": "query",
+            "name": "month",
+            "required": true,
+            "schema": {
+              "pattern": "^\\d{4}-\\d{2}$",
+              "title": "Month",
+              "type": "string"
+            }
+          },
+          {
+            "in": "header",
+            "name": "authorization",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "Authorization"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/SpendingInsightsResponse"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "summary": "Spending Insights",
         "tags": [
           "reporting"
         ]

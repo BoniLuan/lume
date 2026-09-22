@@ -1,3 +1,5 @@
+from datetime import date
+
 from pydantic import BaseModel
 
 from lume.budgets.schemas import BudgetResponse
@@ -62,3 +64,51 @@ class AccountLedgerResponse(BaseModel):
     period_change: Money
     closing_balance: Money
     entries: list[AccountLedgerEntry]
+
+
+class AccountReconciliationRequest(BaseModel):
+    account_id: str
+    as_of_date: date
+    actual_balance: Money
+
+
+class AccountReconciliationResponse(BaseModel):
+    account_id: str
+    account_name: str
+    account_class: str
+    currency: str
+    as_of_date: str
+    opening_balance: Money
+    income: Money
+    expense: Money
+    transfers_in: Money
+    transfers_out: Money
+    calculated_balance: Money
+    actual_balance: Money
+    difference: Money
+    movement_count: int
+
+
+class SpendingAccountRow(BaseModel):
+    account_id: str
+    account_name: str
+    amount: Money
+    count: int
+
+
+class SpendingCategoryRow(BaseModel):
+    category_id: str
+    category_name: str
+    amount: Money
+    previous_amount: Money
+    change: Money
+
+
+class SpendingInsightsResponse(BaseModel):
+    month: str
+    currency: str
+    expense: Money
+    previous_expense: Money
+    change: Money
+    accounts: list[SpendingAccountRow]
+    categories: list[SpendingCategoryRow]
