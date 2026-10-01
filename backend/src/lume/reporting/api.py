@@ -118,6 +118,7 @@ def dashboard(
                 month=trend_start.strftime("%Y-%m"),
                 income=_kind_total(db, auth.user.id, "income", trend_start, trend_end),
                 expense=_kind_total(db, auth.user.id, "expense", trend_start, trend_end),
+                transfers=_kind_total(db, auth.user.id, "transfer", trend_start, trend_end),
             )
         )
     today = datetime.now(ZoneInfo(auth.user.timezone)).date()

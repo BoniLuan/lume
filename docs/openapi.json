@@ -926,12 +926,17 @@
           "month": {
             "title": "Month",
             "type": "string"
+          },
+          "transfers": {
+            "title": "Transfers",
+            "type": "string"
           }
         },
         "required": [
           "month",
           "income",
-          "expense"
+          "expense",
+          "transfers"
         ],
         "title": "MonthlyTrendPoint",
         "type": "object"

@@ -866,6 +866,8 @@ export interface components {
             income: string;
             /** Month */
             month: string;
+            /** Transfers */
+            transfers: string;
         };
         /** OccurrenceAction */
         OccurrenceAction: {

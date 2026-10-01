@@ -308,6 +308,7 @@ def test_receivable_and_credit_card_transfers_do_not_double_count(
     assert dashboard["income"] == "1000.0000"
     assert dashboard["expense"] == "100.0000"
     assert dashboard["net"] == "900.0000"
+    assert dashboard["trend"][-1]["transfers"] == "400.0000"
 
 
 def test_receivable_must_be_an_asset(client: TestClient, auth_headers: dict[str, str]) -> None:
