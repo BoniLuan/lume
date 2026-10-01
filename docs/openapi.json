@@ -16,6 +16,7 @@
               "checking",
               "cash",
               "savings",
+              "benefit",
               "credit_card",
               "receivable",
               "other"
@@ -350,6 +351,7 @@
               "checking",
               "cash",
               "savings",
+              "benefit",
               "credit_card",
               "receivable",
               "other"
@@ -445,6 +447,7 @@
                   "checking",
                   "cash",
                   "savings",
+                  "benefit",
                   "credit_card",
                   "receivable",
                   "other"
@@ -927,8 +930,8 @@
             "title": "Month",
             "type": "string"
           },
-          "transfers": {
-            "title": "Transfers",
+          "net_savings": {
+            "title": "Net Savings",
             "type": "string"
           }
         },
@@ -936,7 +939,7 @@
           "month",
           "income",
           "expense",
-          "transfers"
+          "net_savings"
         ],
         "title": "MonthlyTrendPoint",
         "type": "object"

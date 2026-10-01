@@ -18,7 +18,7 @@ class MonthlyTrendPoint(BaseModel):
     month: str
     income: Money
     expense: Money
-    transfers: Money
+    net_savings: Money
 
 
 class DashboardResponse(BaseModel):

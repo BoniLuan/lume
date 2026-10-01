@@ -79,6 +79,8 @@ def update_account(
         raise HTTPException(status_code=422, detail="Credit cards must be liability accounts")
     if values["account_type"] == "receivable" and values["account_class"] != "asset":
         raise HTTPException(status_code=422, detail="Receivable accounts must be asset accounts")
+    if values["account_type"] == "benefit" and values["account_class"] != "asset":
+        raise HTTPException(status_code=422, detail="Benefit cards must be asset accounts")
     for field, value in payload.model_dump(exclude_unset=True).items():
         setattr(account, field, value)
     db.commit()

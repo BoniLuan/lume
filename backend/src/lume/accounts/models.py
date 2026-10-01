@@ -20,7 +20,8 @@ class Account(UUIDPrimaryKeyMixin, TimestampMixin, Base):
     __tablename__ = "accounts"
     __table_args__ = (
         CheckConstraint(
-            "account_type IN ('checking','cash','savings','credit_card','receivable','other')",
+            "account_type IN "
+            "('checking','cash','savings','benefit','credit_card','receivable','other')",
             name="account_type",
         ),
         CheckConstraint("account_class IN ('asset','liability')", name="account_class"),

@@ -6,8 +6,8 @@ from typing import Annotated
 from zoneinfo import ZoneInfo
 
 from fastapi import APIRouter, Depends, HTTPException, Query, Response
-from sqlalchemy import case, func, or_, select
-from sqlalchemy.orm import Session
+from sqlalchemy import and_, case, func, or_, select
+from sqlalchemy.orm import Session, aliased
 
 from lume.accounts.models import Account
 from lume.auth.dependencies import CsrfAuth, CurrentAuth
@@ -46,6 +46,47 @@ def _kind_total(db: Session, user_id: str, kind: str, start: date, end: date) ->
         select(func.coalesce(func.sum(Transaction.amount), Decimal("0.0000"))).where(
             Transaction.user_id == user_id,
             Transaction.kind == kind,
+            Transaction.voided_at.is_(None),
+            Transaction.effective_date >= start,
+            Transaction.effective_date < end,
+        )
+    )
+    return Decimal(value or 0)
+
+
+def _net_savings(db: Session, user_id: str, start: date, end: date) -> Decimal:
+    source = aliased(Account)
+    destination = aliased(Account)
+    value = db.scalar(
+        select(
+            func.coalesce(
+                func.sum(
+                    case(
+                        (
+                            and_(
+                                destination.account_type == "savings",
+                                source.account_type != "savings",
+                            ),
+                            Transaction.amount,
+                        ),
+                        (
+                            and_(
+                                source.account_type == "savings",
+                                destination.account_type != "savings",
+                            ),
+                            -Transaction.amount,
+                        ),
+                        else_=Decimal("0.0000"),
+                    )
+                ),
+                Decimal("0.0000"),
+            )
+        )
+        .join(source, source.id == Transaction.account_id)
+        .join(destination, destination.id == Transaction.destination_account_id)
+        .where(
+            Transaction.user_id == user_id,
+            Transaction.kind == "transfer",
             Transaction.voided_at.is_(None),
             Transaction.effective_date >= start,
             Transaction.effective_date < end,
@@ -118,7 +159,7 @@ def dashboard(
                 month=trend_start.strftime("%Y-%m"),
                 income=_kind_total(db, auth.user.id, "income", trend_start, trend_end),
                 expense=_kind_total(db, auth.user.id, "expense", trend_start, trend_end),
-                transfers=_kind_total(db, auth.user.id, "transfer", trend_start, trend_end),
+                net_savings=_net_savings(db, auth.user.id, trend_start, trend_end),
             )
         )
     today = datetime.now(ZoneInfo(auth.user.timezone)).date()

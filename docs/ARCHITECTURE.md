@@ -22,7 +22,7 @@ routing. Production networks and DNS aliases are project-prefixed where shared.
 Each module owns its models, schemas, routes, and domain services:
 
 - `auth` and `users`: identity, passwords, revocable sessions, CSRF, profile;
-- `accounts`: asset, liability, and receivable containers with reconciled balances;
+- `accounts`: asset, savings, benefit-card, liability, and receivable containers with reconciled balances;
 - `categories`: user-owned income/expense classification;
 - `transactions`: income, expense, transfers, retry safety, and voiding;
 - `budgets`: monthly overall and optional category limits;
@@ -66,6 +66,14 @@ Lending and principal repayment are transfers through that account, so neither i
 reported as spending or income. Any fee or interest is recorded separately as
 income. This keeps cash balances and monthly performance accurate without adding a
 full double-entry ledger.
+
+Employer-funded meal or food balances use an asset-class `benefit` account. A
+monthly top-up is income and purchases are expenses, so both appear in reports
+while the account balance remains independently reconcilable.
+
+The dashboard savings series is the signed net of transfers crossing into or out
+of `savings` accounts. Transfers between non-savings accounts, including loans,
+repayments, and credit-card payments, do not contribute to that series.
 
 ## Authentication
 

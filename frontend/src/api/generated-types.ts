@@ -557,7 +557,7 @@ export interface components {
              * Account Type
              * @enum {string}
              */
-            account_type: "checking" | "cash" | "savings" | "credit_card" | "receivable" | "other";
+            account_type: "checking" | "cash" | "savings" | "benefit" | "credit_card" | "receivable" | "other";
             /** Name */
             name: string;
             /**
@@ -685,7 +685,7 @@ export interface components {
              * Account Type
              * @enum {string}
              */
-            account_type: "checking" | "cash" | "savings" | "credit_card" | "receivable" | "other";
+            account_type: "checking" | "cash" | "savings" | "benefit" | "credit_card" | "receivable" | "other";
             /** Archived At */
             archived_at: string | null;
             /**
@@ -719,7 +719,7 @@ export interface components {
             /** Account Class */
             account_class?: ("asset" | "liability") | null;
             /** Account Type */
-            account_type?: ("checking" | "cash" | "savings" | "credit_card" | "receivable" | "other") | null;
+            account_type?: ("checking" | "cash" | "savings" | "benefit" | "credit_card" | "receivable" | "other") | null;
             /** Name */
             name?: string | null;
             /** Opened On */
@@ -866,8 +866,8 @@ export interface components {
             income: string;
             /** Month */
             month: string;
-            /** Transfers */
-            transfers: string;
+            /** Net Savings */
+            net_savings: string;
         };
         /** OccurrenceAction */
         OccurrenceAction: {

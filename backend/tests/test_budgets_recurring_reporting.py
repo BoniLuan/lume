@@ -94,7 +94,7 @@ def test_budget_usage_and_dashboard_reconcile(
     assert body["categories"][0]["amount"] == "47.9000"
     assert body["largest_expenses"][0]["description"] == "Lunch"
     assert len(body["trend"]) == 6
-    assert body["trend"][-1]["transfers"] == "0.0000"
+    assert body["trend"][-1]["net_savings"] == "0.0000"
 
 
 def test_monthly_recurrence_preserves_the_31st_after_short_month(

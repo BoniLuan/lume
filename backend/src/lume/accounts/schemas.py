@@ -6,7 +6,9 @@ from pydantic import BaseModel, ConfigDict, Field, model_validator
 
 from lume.core.money import Money
 
-AccountType = Literal["checking", "cash", "savings", "credit_card", "receivable", "other"]
+AccountType = Literal[
+    "checking", "cash", "savings", "benefit", "credit_card", "receivable", "other"
+]
 AccountClass = Literal["asset", "liability"]
 
 
@@ -18,11 +20,13 @@ class AccountCreate(BaseModel):
     opened_on: date
 
     @model_validator(mode="after")
-    def validate_credit_card_class(self) -> AccountCreate:
+    def validate_account_class(self) -> AccountCreate:
         if self.account_type == "credit_card" and self.account_class != "liability":
             raise ValueError("credit cards must be liability accounts")
         if self.account_type == "receivable" and self.account_class != "asset":
             raise ValueError("receivable accounts must be asset accounts")
+        if self.account_type == "benefit" and self.account_class != "asset":
+            raise ValueError("benefit cards must be asset accounts")
         return self
 
 

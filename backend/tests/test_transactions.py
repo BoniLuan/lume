@@ -100,6 +100,8 @@ def test_income_expense_transfer_and_void_reconcile_balances(
     assert voided.status_code == 200
     checking_after = client.get(f"/api/v1/accounts/{checking['id']}").json()
     assert checking_after["current_balance"] == "800.0000"
+    dashboard = client.get("/api/v1/dashboard?month=2026-09").json()
+    assert dashboard["trend"][-1]["net_savings"] == "200.0000"
 
 
 def test_transaction_creation_is_retry_safe(
@@ -308,7 +310,7 @@ def test_receivable_and_credit_card_transfers_do_not_double_count(
     assert dashboard["income"] == "1000.0000"
     assert dashboard["expense"] == "100.0000"
     assert dashboard["net"] == "900.0000"
-    assert dashboard["trend"][-1]["transfers"] == "400.0000"
+    assert dashboard["trend"][-1]["net_savings"] == "0.0000"
 
 
 def test_receivable_must_be_an_asset(client: TestClient, auth_headers: dict[str, str]) -> None:
@@ -324,3 +326,55 @@ def test_receivable_must_be_an_asset(client: TestClient, auth_headers: dict[str,
         },
     )
     assert response.status_code == 422
+
+
+def test_benefit_card_is_an_asset_and_counts_income_and_expenses(
+    client: TestClient,
+    user: User,
+    auth_headers: dict[str, str],
+) -> None:
+    benefit = _create_account(client, auth_headers, "Food benefit", "benefit", "asset")
+    top_up = client.post(
+        "/api/v1/transactions",
+        headers=auth_headers,
+        json={
+            "kind": "income",
+            "account_id": benefit["id"],
+            "category_id": _category_id(user.id, "income"),
+            "amount": "700.0000",
+            "description": "Monthly food benefit",
+            "effective_date": "2026-09-01",
+        },
+    )
+    purchase = client.post(
+        "/api/v1/transactions",
+        headers=auth_headers,
+        json={
+            "kind": "expense",
+            "account_id": benefit["id"],
+            "category_id": _category_id(user.id, "expense"),
+            "amount": "47.9000",
+            "description": "Lunch",
+            "effective_date": "2026-09-02",
+        },
+    )
+
+    assert top_up.status_code == purchase.status_code == 201
+    account = client.get(f"/api/v1/accounts/{benefit['id']}").json()
+    assert account["current_balance"] == "652.1000"
+    dashboard = client.get("/api/v1/dashboard?month=2026-09").json()
+    assert dashboard["income"] == "700.0000"
+    assert dashboard["expense"] == "47.9000"
+
+    invalid = client.post(
+        "/api/v1/accounts",
+        headers=auth_headers,
+        json={
+            "name": "Invalid benefit",
+            "account_type": "benefit",
+            "account_class": "liability",
+            "opening_balance": "0.0000",
+            "opened_on": "2026-09-01",
+        },
+    )
+    assert invalid.status_code == 422

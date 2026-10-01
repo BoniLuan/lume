@@ -20,7 +20,7 @@ are part of the core design.
 ## Current v1 capabilities
 
 - closed-registration authentication for browser cookies and future mobile bearer sessions;
-- asset, credit-card liability, and money-receivable accounts;
+- asset, savings, benefit-card, credit-card liability, and money-receivable accounts;
 - income, expenses, guided loans, card payments, transfers, editing, voiding, and retry-safe creation;
 - user-owned categories and overall/category monthly budgets;
 - recurring income/expense expectations with explicit record or skip actions;

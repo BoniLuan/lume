@@ -437,6 +437,7 @@ select.input { padding-right: 2rem; }
 /* Dashboard month and transfer trend */
 .dashboard-actions { display: flex; align-items: center; gap: .55rem; }
 .trend-bars .transfer, .chart-legend i.transfer { background: var(--gold); }
+.trend-bars .transfer.withdrawal { background: repeating-linear-gradient(135deg, var(--gold), var(--gold) 5px, #8f7440 5px, #8f7440 10px); }
 .chart-note { margin: .65rem 0 0; color: var(--muted); font-size: .67rem; line-height: 1.5; }
 @media (max-width: 760px) {
   .dashboard-actions { width: 100%; }
