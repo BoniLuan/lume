@@ -13,8 +13,7 @@ import { Field, Input, MoneyInput, Select } from "../../components/ui/field";
 import { ErrorNotice } from "../../components/ui/states";
 import { moneyForInput } from "../../lib/money-input";
 import { todayInSaoPaulo } from "../../lib/dates";
-
-type EntryMode = "expense" | "income" | "transfer" | "loan_out" | "loan_repayment" | "credit_payment";
+import { transactionMode } from "../../lib/transaction-mode";
 
 const schema = z
   .object({
@@ -41,14 +40,10 @@ const schema = z
 
 type Values = z.infer<typeof schema>;
 
-function transactionMode(item?: Transaction | null): EntryMode {
-  return item?.kind ?? "expense";
-}
-
-function defaults(item?: Transaction | null): Values {
+function defaults(item?: Transaction | null, accounts: Account[] = []): Values {
   return {
     amount: item ? moneyForInput(item.amount) : "",
-    mode: transactionMode(item),
+    mode: transactionMode(item, accounts),
     description: item?.description ?? "",
     account_id: item?.account_id ?? "",
     category_id: item?.category_id ?? "",
@@ -72,6 +67,7 @@ export function TransactionDialog({
   const categories = useQuery({ queryKey: ["categories"], queryFn: () => api<Category[]>("/api/v1/categories") });
   const form = useForm<Values>({ resolver: zodResolver(schema), defaultValues: defaults(transaction) });
   const mode = useWatch({ control: form.control, name: "mode" });
+  const amount = useWatch({ control: form.control, name: "amount" });
   const sourceId = useWatch({ control: form.control, name: "account_id" });
   const destinationId = useWatch({ control: form.control, name: "destination_account_id" });
   const categoryId = useWatch({ control: form.control, name: "category_id" });
@@ -99,8 +95,8 @@ export function TransactionDialog({
   }, [accounts.data, mode, sourceId]);
 
   useEffect(() => {
-    if (open) form.reset(defaults(transaction));
-  }, [form, open, transaction]);
+    if (open) form.reset(defaults(transaction, accounts.data));
+  }, [accounts.data, form, open, transaction]);
 
   useEffect(() => {
     if (!open) return;
@@ -165,6 +161,16 @@ export function TransactionDialog({
     : mode === "credit_payment" && !(accounts.data ?? []).some((item) => item.account_type === "credit_card")
       ? "Create a Credit card account before recording its payment."
       : null;
+  const selectedCard = mode === "credit_payment"
+    ? accounts.data?.find((item) => item.id === destinationId)
+    : undefined;
+  const existingPayment = transaction?.kind === "transfer" && transaction.destination_account_id === selectedCard?.id
+    ? Number(transaction.amount)
+    : 0;
+  const balanceBeforePayment = selectedCard ? Number(selectedCard.current_balance) - existingPayment : 0;
+  const outstanding = Math.max(-balanceBeforePayment, 0);
+  const enteredPayment = Number(String(amount || "0").replace(",", ".")) || 0;
+  const balanceAfterPayment = Math.round((balanceBeforePayment + enteredPayment) * 100) / 100;
 
   return <Dialog.Root open={open} onOpenChange={onOpenChange}><Dialog.Portal><Dialog.Overlay className="dialog-overlay" /><Dialog.Content className="dialog-content">
     <div className="dialog-heading"><div><span className="eyebrow">{transaction ? "Ledger correction" : "Quick entry"}</span><Dialog.Title>{transaction ? "Edit transaction" : "Add transaction"}</Dialog.Title></div><Dialog.Close asChild><Button variant="ghost" size="icon" aria-label="Close"><X size={20} /></Button></Dialog.Close></div>
@@ -176,6 +182,7 @@ export function TransactionDialog({
       <Field label="Description" error={form.formState.errors.description?.message}><Input placeholder={mode === "expense" ? "e.g. Groceries" : mode === "income" ? "e.g. Salary" : "e.g. Repayment from Ana"} {...form.register("description")} /></Field>
       <Field label={mode === "loan_repayment" ? "Receivable" : "From account"} error={form.formState.errors.account_id?.message}><Select {...form.register("account_id")}><option value="">Choose account</option>{sourceAccounts.map((item) => <option key={item.id} value={item.id}>{item.name}</option>)}</Select></Field>
       {isTransfer ? <Field label={mode === "loan_out" ? "Receivable" : mode === "credit_payment" ? "Credit card" : "To account"} error={form.formState.errors.destination_account_id?.message}><Select {...form.register("destination_account_id")}><option value="">Choose destination</option>{destinationAccounts.map((item) => <option key={item.id} value={item.id}>{item.name}</option>)}</Select></Field> : <Field label="Category" error={form.formState.errors.category_id?.message}><Select {...form.register("category_id")}><option value="">Choose category</option>{suitableCategories.map((item) => <option key={item.id} value={item.id}>{item.name}</option>)}</Select></Field>}
+      {mode === "credit_payment" && selectedCard ? <div className="card-payment-summary"><span>{outstanding > 0 ? `Outstanding before this payment: R$ ${moneyForInput(String(outstanding))}` : "This card has no outstanding balance."}</span>{outstanding > 0 ? <Button type="button" variant="secondary" onClick={() => form.setValue("amount", moneyForInput(String(outstanding)), { shouldValidate: true })}>Pay full outstanding</Button> : null}{enteredPayment > 0 ? <small>{balanceAfterPayment < 0 ? `R$ ${moneyForInput(String(Math.abs(balanceAfterPayment)))} will remain owed.` : balanceAfterPayment === 0 ? "This payment will pay off the card." : `This payment will create R$ ${moneyForInput(String(balanceAfterPayment))} in card credit.`}</small> : null}</div> : null}
       <Field label="Date"><Input type="date" {...form.register("effective_date")} /></Field>
       <details className="form-details"><summary>Add a note</summary><Field label="Note"><Input placeholder="Optional detail" {...form.register("notes")} /></Field></details>
       {missingGuidedAccount ? <ErrorNotice message={missingGuidedAccount} /> : null}{save.error ? <ErrorNotice message={save.error.message} /> : null}

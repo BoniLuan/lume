@@ -310,7 +310,8 @@ select.input { padding-right: 2rem; }
   .mobile-header .brand img { width: 32px; height: 32px; }
   .bottom-nav { position: fixed; z-index: 40; inset: auto 0 0; height: calc(64px + env(safe-area-inset-bottom)); padding: .45rem .5rem env(safe-area-inset-bottom); display: flex; justify-content: space-around; background: var(--paper); border-top: 1px solid var(--line); }
   .bottom-nav a { min-width: 54px; display: grid; place-items: center; align-content: center; gap: .15rem; color: var(--muted); font-size: .57rem; font-weight: 700; }
-  .bottom-nav a.active { color: var(--forest); }
+  .bottom-nav a.active, .mobile-more-trigger.active { color: var(--forest); }
+  .mobile-more-trigger { min-width: 54px; padding: 0; display: grid; place-items: center; align-content: center; gap: .15rem; color: var(--muted); background: transparent; border: 0; font: inherit; font-size: .57rem; font-weight: 700; }
   .quick-add-fab { position: fixed; right: 1.1rem; bottom: calc(76px + env(safe-area-inset-bottom)); z-index: 35; display: grid; width: 52px; height: 52px; border-radius: 50%; box-shadow: 0 12px 35px rgb(16 44 38 / 28%); }
   .page { width: calc(100% - 2rem); padding: 1.5rem 0 2rem; }
   .page-header { margin-bottom: 1.5rem; align-items: flex-start; flex-direction: column; }
@@ -342,6 +343,14 @@ select.input { padding-right: 2rem; }
   .form-grid { grid-template-columns: 1fr; }
   .form-grid > * { grid-column: 1 / -1; }
 }
+
+.mobile-more-menu { z-index: 60; width: min(260px, calc(100vw - 2rem)); padding: .5rem; display: grid; gap: .2rem; background: var(--paper); border: 1px solid var(--line); border-radius: 14px; box-shadow: 0 18px 55px rgb(16 44 38 / 20%); }
+.mobile-more-menu a, .mobile-menu-action { width: 100%; padding: .8rem .9rem; display: flex; align-items: center; gap: .75rem; color: var(--ink); background: transparent; border: 0; border-radius: 9px; font: inherit; font-size: .82rem; font-weight: 700; cursor: pointer; }
+.mobile-more-menu a:hover, .mobile-more-menu a:focus, .mobile-more-menu a.active, .mobile-menu-action:hover, .mobile-menu-action:focus { color: var(--forest); background: var(--cream); outline: none; }
+.mobile-more-menu [role="separator"] { height: 1px; margin: .3rem .4rem; background: var(--line); }
+.card-payment-summary { padding: .8rem; display: grid; gap: .55rem; background: var(--cream); border: 1px solid var(--line); border-radius: 10px; color: var(--ink); font-size: .75rem; }
+.card-payment-summary .button { justify-self: start; }
+.card-payment-summary small { color: var(--muted); }
 
 @media (prefers-reduced-motion: reduce) {
   *, *::before, *::after { scroll-behavior: auto !important; animation-duration: .01ms !important; transition-duration: .01ms !important; }
