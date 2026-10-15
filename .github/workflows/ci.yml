@@ -108,14 +108,14 @@ jobs:
           username: ${{ github.actor }}
           password: ${{ secrets.GITHUB_TOKEN }}
       - name: Publish API image
-        uses: docker/build-push-action@v6
+        uses: docker/build-push-action@v7
         with:
           context: backend
           target: production
           push: true
           tags: ghcr.io/boniluan/lume-api:${{ env.IMAGE_TAG }}
       - name: Publish gateway image
-        uses: docker/build-push-action@v6
+        uses: docker/build-push-action@v7
         with:
           context: .
           file: gateway/Dockerfile
