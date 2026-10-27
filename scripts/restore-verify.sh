@@ -51,7 +51,7 @@ docker run -d --name "$db_name" --network "$network_name" --network-alias db \
   -v "${volume_name}:/var/lib/mysql" \
   --health-cmd='healthcheck.sh --connect --innodb_initialized' \
   --health-interval=2s --health-timeout=3s --health-retries=30 \
-  mariadb:11.4.13 >/dev/null
+  mariadb:11.4.13@sha256:250e1609e93c0e6aecf64bfbab2d84d5e89d2481540fe77447ff6c855c3b1873 >/dev/null
 
 for _ in $(seq 1 45); do
   [[ "$(docker inspect -f '{{.State.Health.Status}}' "$db_name")" == "healthy" ]] && break

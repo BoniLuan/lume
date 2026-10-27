@@ -93,3 +93,9 @@ deployment runbook.
 ## License
 
 No license has been selected yet. All rights are reserved until one is added.
+
+## Security maintenance — 2026-10-23
+
+Production targets Python 3.14.9, Node 24.22.1 for frontend builds and unprivileged Nginx 1.30.6. MariaDB stays on 11.4.13. Upstream images and the uv build tool are pinned by digest. Frontend dependency security fixes are recorded in the lockfile; production secrets, networks, schema and database volume are preserved.
+
+VPS backup and recovery procedures: [shared VPS runbook](https://github.com/BoniLuan/boniluan/blob/main/ops/vps/README.md).
