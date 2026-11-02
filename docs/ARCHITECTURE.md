@@ -99,7 +99,7 @@ responses have no runtime cache rule, and the production gateway marks API repli
 
 ## Decisions deferred beyond v1
 
-Card statement cycles, installments, bank imports, Open Finance, notifications,
+Card statement cycles, installments, automatic bank feeds, Open Finance, notifications,
 goals, investments, shared households, multiple currencies, and native mobile are
 outside v1. Recurring templates remain expectations; they do not silently create
 financial transactions.

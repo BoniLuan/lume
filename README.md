@@ -26,7 +26,7 @@ are part of the core design.
 - recurring income/expense expectations with explicit record or skip actions;
 - dashboard totals, category ranking, six-month trend, largest expenses, and date-based account balance reconciliation;
 - monthly spending insights by account and category;
-- reviewed CSV/OFX transaction imports with duplicate checks and remembered category suggestions;
+- saved CSV/OFX reviews with existing-transaction links, per-row registration, and balance previews;
 - CSV transaction export protected against spreadsheet formula injection;
 - responsive public site and installable online-only PWA shell;
 - structured logs, request IDs, private metrics, readiness, and login throttling.

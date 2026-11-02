@@ -11,7 +11,7 @@ from lume.accounts.models import Account
 from lume.auth.dependencies import CsrfAuth
 from lume.categories.models import Category
 from lume.core.database import get_db
-from lume.imports.models import ImportCategoryRule
+from lume.imports.models import ImportCategoryRule, ImportRowResolution
 from lume.imports.parser import merchant_key, parse_statement
 from lume.imports.schemas import (
     StatementCommitRequest,
@@ -124,7 +124,13 @@ def commit_statement(
             skipped += 1
             continue
         should_skip_match = probable_match is not None and not decision.allow_possible_match
-        if existing is not None or should_skip_match:
+        resolved = db.scalar(
+            select(ImportRowResolution.id).where(
+                ImportRowResolution.user_id == auth.user.id,
+                ImportRowResolution.row_key == row.row_key,
+            )
+        )
+        if existing is not None or should_skip_match or resolved is not None:
             matched += 1
             continue
         kind = decision.kind or row.kind
@@ -149,7 +155,7 @@ def commit_statement(
                 destination_account_id=destination_account_id,
                 category_id=decision.category_id if kind != "transfer" else None,
                 amount=Decimal(row.amount),
-                description=row.description,
+                description=row.description[:160],
                 effective_date=row.effective_date,
             )
         except ValidationError as error:

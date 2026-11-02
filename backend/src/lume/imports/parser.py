@@ -103,7 +103,7 @@ def _parse_csv(content: str) -> list[tuple[date, str, Decimal, str | None]]:
             if bool(debit) == bool(credit):
                 raise ValueError("Each CSV row needs exactly one debit or credit amount")
             amount = -abs(_amount(debit)) if debit else abs(_amount(credit))
-        description = _field(row, _DESCRIPTION_ALIASES)[:160]
+        description = _field(row, _DESCRIPTION_ALIASES)
         if not description:
             raise ValueError("Statement rows need a description")
         records.append(
@@ -129,7 +129,7 @@ def _parse_ofx(content: str) -> list[tuple[date, str, Decimal, str | None]]:
     ):
         block = match.group(1)
         raw_date = _tag(block, "DTPOSTED")
-        description = (_tag(block, "NAME") or _tag(block, "MEMO"))[:160]
+        description = _tag(block, "NAME") or _tag(block, "MEMO")
         if not raw_date or not description:
             raise ValueError("OFX transaction lacks a date or description")
         records.append(
@@ -159,7 +159,9 @@ def parse_statement(account_id: str, filename: str, content: str) -> tuple[str, 
     occurrences: dict[str, int] = {}
     rows = []
     for posted, description, signed_amount, source_id in parsed:
-        identity = source_id or f"{posted.isoformat()}|{description.casefold()}|{signed_amount}"
+        identity = (
+            source_id or f"{posted.isoformat()}|{description[:160].casefold()}|{signed_amount}"
+        )
         occurrences[identity] = occurrences.get(identity, 0) + 1
         stable = f"{account_id}|{identity}|{occurrences[identity]}"
         row_key = str(uuid5(NAMESPACE_URL, f"lume-import:{stable}"))

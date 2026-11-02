@@ -283,6 +283,77 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/api/v1/imports/reviews": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** List Reviews */
+        get: operations["list_reviews_api_v1_imports_reviews_get"];
+        put?: never;
+        /** Create Review */
+        post: operations["create_review_api_v1_imports_reviews_post"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/imports/reviews/{review_id}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Get Review */
+        get: operations["get_review_api_v1_imports_reviews__review_id__get"];
+        /** Update Review */
+        put: operations["update_review_api_v1_imports_reviews__review_id__put"];
+        post?: never;
+        /** Delete Review */
+        delete: operations["delete_review_api_v1_imports_reviews__review_id__delete"];
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/imports/reviews/{review_id}/apply": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** Apply Review */
+        post: operations["apply_review_api_v1_imports_reviews__review_id__apply_post"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/imports/reviews/{review_id}/candidates": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Search Candidates */
+        get: operations["search_candidates_api_v1_imports_reviews__review_id__candidates_get"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/api/v1/recurring-templates": {
         parameters: {
             query?: never;
@@ -858,6 +929,41 @@ export interface components {
             /** Detail */
             detail?: components["schemas"]["ValidationError"][];
         };
+        /** MatchCandidate */
+        MatchCandidate: {
+            /** Account Id */
+            account_id: string;
+            /** Account Name */
+            account_name: string;
+            /** Already Linked */
+            already_linked: boolean;
+            /** Amount */
+            amount: string;
+            /** Category Name */
+            category_name: string | null;
+            /** Description */
+            description: string;
+            /** Destination Account Id */
+            destination_account_id: string | null;
+            /** Destination Account Name */
+            destination_account_name: string | null;
+            /**
+             * Effective Date
+             * Format: date
+             */
+            effective_date: string;
+            /**
+             * Kind
+             * @enum {string}
+             */
+            kind: "income" | "expense" | "transfer";
+            /** Ledger Account Id */
+            ledger_account_id: string;
+            /** Reasons */
+            reasons: string[];
+            /** Transaction Id */
+            transaction_id: string;
+        };
         /** MonthlyTrendPoint */
         MonthlyTrendPoint: {
             /** Expense */
@@ -993,6 +1099,165 @@ export interface components {
             end_on?: string | null;
             /** Notes */
             notes?: string | null;
+        };
+        /** ReviewApplyResponse */
+        ReviewApplyResponse: {
+            /** Created */
+            created: number;
+            /** Ignored */
+            ignored: number;
+            /** Linked */
+            linked: number;
+            /** Pending */
+            pending: number;
+            review: components["schemas"]["ReviewResponse"];
+        };
+        /** ReviewBalance */
+        ReviewBalance: {
+            /** Account Id */
+            account_id: string;
+            /** Account Name */
+            account_name: string;
+            /**
+             * Balance Date
+             * Format: date
+             */
+            balance_date: string;
+            /** Current Balance */
+            current_balance: string;
+            /** Difference */
+            difference?: string | null;
+            /** Projected Balance */
+            projected_balance: string;
+            /** Statement Closing Balance */
+            statement_closing_balance?: string | null;
+        };
+        /** ReviewDecision */
+        ReviewDecision: {
+            /** Account Id */
+            account_id?: string | null;
+            /**
+             * Action
+             * @default pending
+             * @enum {string}
+             */
+            action: "pending" | "skip" | "create" | "link";
+            /**
+             * Allow Possible Match
+             * @default false
+             */
+            allow_possible_match: boolean;
+            /** Category Id */
+            category_id?: string | null;
+            /** Counterparty Account Id */
+            counterparty_account_id?: string | null;
+            /** Description */
+            description?: string | null;
+            /** Kind */
+            kind?: ("income" | "expense" | "transfer") | null;
+            /**
+             * Remember Category
+             * @default false
+             */
+            remember_category: boolean;
+            /** Row Key */
+            row_key: string;
+            /** Transaction Id */
+            transaction_id?: string | null;
+        };
+        /** ReviewResponse */
+        ReviewResponse: {
+            /** Account Id */
+            account_id: string;
+            /** Balances */
+            balances: components["schemas"]["ReviewBalance"][];
+            /** Decisions */
+            decisions: components["schemas"]["ReviewDecision"][];
+            /** Filename */
+            filename: string;
+            /** Id */
+            id: string;
+            metadata: components["schemas"]["StatementMetadata"];
+            /** Opening Difference */
+            opening_difference: string | null;
+            /** Opening Lume Balance */
+            opening_lume_balance: string;
+            /** Rows */
+            rows: components["schemas"]["ReviewRow"][];
+            /** Unmatched Transactions */
+            unmatched_transactions: components["schemas"]["MatchCandidate"][];
+            /**
+             * Updated At
+             * Format: date-time
+             */
+            updated_at: string;
+            /** Version */
+            version: number;
+        };
+        /** ReviewRow */
+        ReviewRow: {
+            /** Amount */
+            amount: string;
+            /** Candidates */
+            candidates: components["schemas"]["MatchCandidate"][];
+            /** Description */
+            description: string;
+            /**
+             * Effective Date
+             * Format: date
+             */
+            effective_date: string;
+            /** Invalid Transaction Id */
+            invalid_transaction_id?: string | null;
+            /**
+             * Kind
+             * @enum {string}
+             */
+            kind: "income" | "expense";
+            /** Matched Transaction Id */
+            matched_transaction_id: string | null;
+            /** Resolution Warning */
+            resolution_warning: string | null;
+            /** Resolved Action */
+            resolved_action: ("create" | "link" | "skip") | null;
+            /** Resolved Transaction Id */
+            resolved_transaction_id: string | null;
+            /** Row Key */
+            row_key: string;
+            /** Source Id */
+            source_id: string | null;
+            /** Suggested Category Id */
+            suggested_category_id: string | null;
+            /** Suggested Counterparty Account Id */
+            suggested_counterparty_account_id: string | null;
+            /**
+             * Suggested Kind
+             * @enum {string}
+             */
+            suggested_kind: "income" | "expense" | "transfer";
+        };
+        /** ReviewSummary */
+        ReviewSummary: {
+            /** Account Id */
+            account_id: string;
+            /** Filename */
+            filename: string;
+            /** Id */
+            id: string;
+            /**
+             * Updated At
+             * Format: date-time
+             */
+            updated_at: string;
+            /** Version */
+            version: number;
+        };
+        /** ReviewUpdate */
+        ReviewUpdate: {
+            /** Decisions */
+            decisions: components["schemas"]["ReviewDecision"][];
+            /** Version */
+            version: number;
         };
         /** SessionCreate */
         SessionCreate: {
@@ -1144,6 +1409,33 @@ export interface components {
             remember_category: boolean;
             /** Row Key */
             row_key: string;
+        };
+        /** StatementMetadata */
+        StatementMetadata: {
+            /** Account Last Four */
+            account_last_four?: string | null;
+            /** Account Type */
+            account_type?: string | null;
+            /** Balance Date */
+            balance_date?: string | null;
+            /** Closing Balance */
+            closing_balance?: string | null;
+            /** Currency */
+            currency?: string | null;
+            /**
+             * End Date
+             * Format: date
+             */
+            end_date: string;
+            /** Inferred Opening Balance */
+            inferred_opening_balance?: string | null;
+            /** Institution */
+            institution?: string | null;
+            /**
+             * Start Date
+             * Format: date
+             */
+            start_date: string;
         };
         /** StatementPreviewRequest */
         StatementPreviewRequest: {
@@ -2113,6 +2405,250 @@ export interface operations {
                 };
                 content: {
                     "application/json": components["schemas"]["StatementPreviewResponse"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    list_reviews_api_v1_imports_reviews_get: {
+        parameters: {
+            query?: never;
+            header?: {
+                authorization?: string | null;
+            };
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ReviewSummary"][];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    create_review_api_v1_imports_reviews_post: {
+        parameters: {
+            query?: never;
+            header?: {
+                "X-CSRF-Token"?: string | null;
+                authorization?: string | null;
+            };
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["StatementPreviewRequest"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            201: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ReviewResponse"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    get_review_api_v1_imports_reviews__review_id__get: {
+        parameters: {
+            query?: never;
+            header?: {
+                authorization?: string | null;
+            };
+            path: {
+                review_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ReviewResponse"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    update_review_api_v1_imports_reviews__review_id__put: {
+        parameters: {
+            query?: never;
+            header?: {
+                "X-CSRF-Token"?: string | null;
+                authorization?: string | null;
+            };
+            path: {
+                review_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["ReviewUpdate"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ReviewResponse"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    delete_review_api_v1_imports_reviews__review_id__delete: {
+        parameters: {
+            query?: never;
+            header?: {
+                "X-CSRF-Token"?: string | null;
+                authorization?: string | null;
+            };
+            path: {
+                review_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            204: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    apply_review_api_v1_imports_reviews__review_id__apply_post: {
+        parameters: {
+            query?: never;
+            header?: {
+                "X-CSRF-Token"?: string | null;
+                authorization?: string | null;
+            };
+            path: {
+                review_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["ReviewUpdate"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ReviewApplyResponse"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    search_candidates_api_v1_imports_reviews__review_id__candidates_get: {
+        parameters: {
+            query: {
+                row_key: string;
+                search?: string;
+            };
+            header?: {
+                authorization?: string | null;
+            };
+            path: {
+                review_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["MatchCandidate"][];
                 };
             };
             /** @description Validation Error */

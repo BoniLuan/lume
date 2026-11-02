@@ -12,7 +12,7 @@ from lume.categories.defaults import seed_default_categories
 from lume.categories.models import Category
 from lume.core.database import SessionFactory
 from lume.core.security import hash_password
-from lume.imports.models import ImportCategoryRule
+from lume.imports.models import ImportCategoryRule, ImportReview, ImportRowResolution
 from lume.main import app
 from lume.recurring.models import RecurringOccurrence, RecurringTemplate
 from lume.transactions.models import Transaction
@@ -27,6 +27,8 @@ def clean_database() -> Generator[None]:
         session.execute(delete(RecurringTemplate))
         session.execute(delete(BudgetCategoryLimit))
         session.execute(delete(BudgetPeriod))
+        session.execute(delete(ImportRowResolution))
+        session.execute(delete(ImportReview))
         session.execute(delete(Transaction))
         session.execute(delete(Account))
         session.execute(delete(AuthSession))
@@ -39,6 +41,8 @@ def clean_database() -> Generator[None]:
         session.execute(delete(RecurringTemplate))
         session.execute(delete(BudgetCategoryLimit))
         session.execute(delete(BudgetPeriod))
+        session.execute(delete(ImportRowResolution))
+        session.execute(delete(ImportReview))
         session.execute(delete(Transaction))
         session.execute(delete(Account))
         session.execute(delete(AuthSession))

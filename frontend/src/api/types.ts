@@ -21,3 +21,10 @@ export type User = components["schemas"]["UserResponse"];
 export type StatementPreview = components["schemas"]["StatementPreviewResponse"];
 export type StatementDecision = components["schemas"]["StatementDecision"];
 export type StatementCommit = components["schemas"]["StatementCommitResponse"];
+
+export type StatementReview = components["schemas"]["ReviewResponse"];
+export type ReviewDecision = components["schemas"]["ReviewDecision"];
+export type ReviewSummary = components["schemas"]["ReviewSummary"];
+export type ReviewRow = components["schemas"]["ReviewRow"];
+export type MatchCandidate = components["schemas"]["MatchCandidate"];
+export type ReviewApply = components["schemas"]["ReviewApplyResponse"];
